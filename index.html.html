@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LATAM Work Report Dashboard - Flight Tech Worldwide Corp</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--pri:#1a56db;--pri-l:#3b82f6;--sec:#059669;--warn:#d97706;--dng:#dc2626;--bg:#f0f4f8;--card:#fff;--txt:#1e293b;--mut:#64748b;--brd:#e2e8f0;--sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);--sh2:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
+.hdr{background:linear-gradient(135deg,#1e3a5f,#1a56db);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.15);flex-wrap:wrap;gap:10px}
+.hdr h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
+.hdr .sub{font-size:12px;opacity:.8;margin-top:2px}
+.hdr .logo{display:flex;align-items:center;gap:12px}
+.hdr .ico{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
+.hdr .dr{font-size:12px;background:rgba(255,255,255,.12);padding:5px 12px;border-radius:8px}
+.ctl{padding:14px 28px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--brd)}
+.ctl label{font-size:12px;font-weight:600;color:var(--mut)}
+.ctl select{padding:6px 10px;border:1px solid var(--brd);border-radius:8px;font-size:13px;background:#fff;cursor:pointer;outline:none}
+.ctl select:focus{border-color:var(--pri-l);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
+.ctl .mode-info{font-size:11px;color:var(--pri-l);font-weight:600;margin-left:auto;background:rgba(59,130,246,.08);padding:4px 10px;border-radius:6px}
+.ctl .refresh-btn{padding:5px 12px;border:1px solid var(--brd);border-radius:8px;font-size:12px;background:#fff;cursor:pointer;font-weight:600;color:var(--pri);transition:.15s}
+.ctl .refresh-btn:hover{background:var(--pri);color:#fff}
+.cnt{padding:0 28px 28px}
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:18px 0}
+.kpi{background:var(--card);border-radius:12px;padding:16px 18px;box-shadow:var(--sh);border-left:4px solid var(--pri);transition:transform .15s,box-shadow .15s}
+.kpi:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.kpi.g{border-left-color:var(--sec)}.kpi.o{border-left-color:var(--warn)}.kpi.r{border-left-color:var(--dng)}
+.kpi-l{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:600}
+.kpi-v{font-size:26px;font-weight:700;margin:3px 0}
+.kpi.g .kpi-v{color:var(--sec)}.kpi.o .kpi-v{color:var(--warn)}.kpi.r .kpi-v{color:var(--dng)}
+.kpi-s{font-size:11px;color:var(--mut)}
+.tr{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:600}
+.tr.up{color:var(--sec)}.tr.dn{color:var(--dng)}
+.tabs{display:flex;gap:4px;margin-bottom:18px}
+.tab{padding:7px 16px;border:none;background:transparent;color:var(--mut);font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;transition:.15s}
+.tab.on{background:var(--pri);color:#fff}.tab:hover:not(.on){background:#e2e8f0}
+.tc{display:none}.tc.on{display:block}
+.grd{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.cc{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--sh)}
+.cc.f{grid-column:1/-1}
+.ct{font-size:14px;font-weight:700;margin-bottom:3px}
+.cs{font-size:11px;color:var(--mut);margin-bottom:14px}
+.ch{position:relative;height:290px}.ch.t{height:340px}
+.tc-tbl{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--sh);overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:#f8fafc;font-weight:600;text-align:left;padding:8px 10px;border-bottom:2px solid var(--brd);white-space:nowrap;position:sticky;top:0}
+td{padding:7px 10px;border-bottom:1px solid var(--brd)}
+tr:hover td{background:#f8fafc}
+.n{text-align:right;font-variant-numeric:tabular-nums}
+.p{font-weight:600}.p.h{color:var(--sec)}.p.m{color:var(--warn)}.p.l{color:var(--dng)}
+.loading{text-align:center;padding:60px;color:var(--mut);font-size:16px}
+.loading .spin{display:inline-block;width:28px;height:28px;border:3px solid var(--brd);border-top-color:var(--pri);border-radius:50%;animation:sp .8s linear infinite;margin-bottom:12px}
+@keyframes sp{to{transform:rotate(360deg)}}
+.err{text-align:center;padding:40px;color:var(--dng);background:#fef2f2;border-radius:12px;margin:20px}
+@media(max-width:900px){.grd{grid-template-columns:1fr}.hdr{flex-direction:column;align-items:flex-start}.cnt{padding:0 14px 20px}.ctl{padding:10px 14px}}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div class="logo">
+    <div class="ico">&#9992;</div>
+    <div><h1>LATAM Work Report Dashboard</h1><div class="sub">Flight Tech Worldwide Corp &mdash; Work Planning &amp; Control</div></div>
+  </div>
+  <div class="dr" id="dateRange">Loading...</div>
+</div>
+<div class="ctl">
+  <label>Period:</label>
+  <select id="mf"><option value="all">All Months (Monthly View)</option></select>
+  <button class="refresh-btn" id="refreshBtn" onclick="loadData()">&#8635; Refresh Data</button>
+  <div class="mode-info" id="modeInfo">Loading data from Google Sheets...</div>
+</div>
+<div class="cnt" id="mainContent">
+  <div class="loading" id="loadingMsg"><div class="spin"></div><br>Loading data from Google Sheets...<br><span style="font-size:12px;margin-top:8px;display:block">Connecting to Master_Work_Report spreadsheet</span></div>
+</div>
+
+<div class="cnt" id="dashContent" style="display:none">
+  <div class="kpi-row" id="kR"></div>
+  <div class="tabs">
+    <button class="tab on" data-t="overview">Overview</button>
+    <button class="tab" data-t="hh">Man-Hours (HH)</button>
+    <button class="tab" data-t="tasks">Tasks</button>
+    <button class="tab" data-t="reasons">Reasons</button>
+    <button class="tab" data-t="table">Detail Table</button>
+  </div>
+  <div class="tc on" id="t-overview">
+    <div class="grd">
+      <div class="cc f"><div class="ct">HH Executed vs Programmed Trend</div><div class="cs">Man-hours evolution over time</div><div class="ch t"><canvas id="c1"></canvas></div></div>
+      <div class="cc"><div class="ct">Tasks: Executed vs Total</div><div class="cs">Task count per period</div><div class="ch"><canvas id="c2"></canvas></div></div>
+      <div class="cc"><div class="ct">Execution Rate (%)</div><div class="cs">Percentage of tasks executed over total</div><div class="ch"><canvas id="c3"></canvas></div></div>
+    </div>
+  </div>
+  <div class="tc" id="t-hh">
+    <div class="grd">
+      <div class="cc f"><div class="ct">Man-Hours Breakdown</div><div class="cs">Programmed, Extra, Canceled &amp; Unassigned</div><div class="ch t"><canvas id="c4"></canvas></div></div>
+      <div class="cc"><div class="ct">HH Distribution (Selected Period)</div><div class="cs">Proportion of each HH category</div><div class="ch"><canvas id="c5"></canvas></div></div>
+      <div class="cc"><div class="ct">Daily Average HH</div><div class="cs">Man-hours executed per working day</div><div class="ch"><canvas id="c6"></canvas></div></div>
+    </div>
+  </div>
+  <div class="tc" id="t-tasks">
+    <div class="grd">
+      <div class="cc f"><div class="ct">Tasks Breakdown</div><div class="cs">Programmed, Extra, Unassigned (LATAM/FTWC) &amp; Canceled</div><div class="ch t"><canvas id="c7"></canvas></div></div>
+      <div class="cc"><div class="ct">Task Types (Selected Period)</div><div class="cs">Percentage distribution</div><div class="ch"><canvas id="c8"></canvas></div></div>
+      <div class="cc"><div class="ct">Deferrals &amp; Preventive</div><div class="cs">Trend over time</div><div class="ch"><canvas id="c9"></canvas></div></div>
+    </div>
+  </div>
+  <div class="tc" id="t-reasons">
+    <div class="grd">
+      <div class="cc f"><div class="ct">Non-Execution / Cancellation Reasons</div><div class="cs">Cumulative total by reason category</div><div class="ch t"><canvas id="c10"></canvas></div></div>
+      <div class="cc f"><div class="ct">Top Reasons Over Time</div><div class="cs">Trend of main reasons</div><div class="ch t"><canvas id="c11"></canvas></div></div>
+    </div>
+  </div>
+  <div class="tc" id="t-table">
+    <div class="tc-tbl"><div class="ct" style="margin-bottom:14px" id="tblTitle">Monthly Detail Summary</div><div style="max-height:600px;overflow:auto"><table id="dT"></table></div></div>
+  </div>
+</div>
+
+<script>
+// ===== GOOGLE SHEET CONFIG =====
+var SHEET_ID = '1XHozgWnbnOdytzk34mK8DiZak92TrVRMPcHP3GV8XFU';
+var GID = '773890483';
+
+// Metric prefix -> field mapping
+var METRIC_MAP = [
+  ['Total Task', 'tt'], ['Task Executed', 'te'],
+  ['Task Unassigned by LATAM', 'tul'], ['Task Unassigned by FTWC', 'tuf'],
+  ['HH Executed', 'hhe'], ['HH Programmed', 'hhp'], ['HH Extra', 'hhx'],
+  ['HH Canceled', 'hhc'], ['HH Unassigned', 'hhu'],
+  ['Programmed Task', 'pt'], ['Extra Task', 'et'], ['Canceled Task', 'ct'],
+  ['Extra Total Dailys', 'etd'], ['Extra Total Transits', 'ett'],
+  ['Defferals', 'def'], ['Preventative', 'prev'],
+  ['FALTA HH', 'r_fhh'], ['FINANCIAMIENTO', 'r_fin'],
+  ['TAREA INCOMPATIBLE', 'r_tinc'], ['TAT', 'r_tat'],
+  ['FALTA DE EQUIPOS', 'r_feq'], ['INFRAESTRUCTURA', 'r_inf'],
+  ['WEATHER', 'r_wea'], ['EVALUACION DE DIFERIDO', 'r_eval'],
+  ['TAREA AVANCE PARCIAL', 'r_tav'], ['NO ACEPTADA', 'r_noa'],
+  ['TAREA NO TIENE', 'r_tni']
+];
+function metricToField(m) {
+  for (var i = 0; i < METRIC_MAP.length; i++) {
+    if (m.indexOf(METRIC_MAP[i][0]) === 0) return METRIC_MAP[i][1];
+  }
+  return null;
+}
+var ALL_FIELDS = ['tt','te','tul','tuf','ct','pt','et','etd','ett','def','prev','hhe','hhp','hhx','hhc','hhu','r_fhh','r_fin','r_tinc','r_tat','r_feq','r_inf','r_wea','r_eval','r_tav','r_noa','r_tni'];
+
+// ===== PIVOT GVIZ RESPONSE TO WIDE =====
+// Columns verified: Report_Date(0), Month_Folder(1), File_Name(2), Tab_Read(3), Group(4), RowIndex(5), Metric(6), Value(7)
+function pivotGviz(table) {
+  var dateMap = {};
+  var rows = table.rows;
+  for (var r = 0; r < rows.length; r++) {
+    var cells = rows[r].c;
+    if (!cells || cells.length < 8) continue;
+    var date = cells[0] ? String(cells[0].f || cells[0].v || '') : '';
+    var month = cells[1] ? String(cells[1].f || cells[1].v || '') : '';
+    var metric = cells[6] ? String(cells[6].v || '') : '';
+    var val = cells[7] ? (parseFloat(cells[7].v) || 0) : 0;
+    if (!date || !metric) continue;
+    if (!dateMap[date]) {
+      dateMap[date] = { d: date, m: month };
+      for (var f = 0; f < ALL_FIELDS.length; f++) dateMap[date][ALL_FIELDS[f]] = 0;
+    }
+    var field = metricToField(metric);
+    if (field) dateMap[date][field] = val;
+  }
+  var result = [];
+  for (var k in dateMap) result.push(dateMap[k]);
+  result.sort(function(a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
+  return result;
+}
+
+// ===== DATA STATE =====
+var allDaily = [];
+var monthKeys = [];
+var monthMap = {};
+var monthlyData = [];
+
+// ===== LOAD DATA VIA JSONP (works from file:// and any origin) =====
+function loadData() {
+  var btn = document.getElementById('refreshBtn');
+  var mi = document.getElementById('modeInfo');
+  var loadingEl = document.getElementById('loadingMsg');
+  var mainEl = document.getElementById('mainContent');
+
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+  mi.textContent = 'Fetching data from Google Sheets...';
+  if (loadingEl) { mainEl.style.display = 'block'; loadingEl.style.display = 'block'; }
+
+  var cbName = '_gviz_' + Date.now();
+  var script = document.createElement('script');
+
+  window[cbName] = function(response) {
+    delete window[cbName];
+    try { document.head.removeChild(script); } catch(e) {}
+    btn.disabled = false;
+    btn.textContent = '\u21BB Refresh Data';
+
+    if (!response || !response.table || !response.table.rows) {
+      var errMsg = 'Could not load data.';
+      if (response && response.errors && response.errors[0]) errMsg = response.errors[0].detailed_message || response.errors[0].message;
+      if (loadingEl) {
+        loadingEl.innerHTML = '<div class="err"><strong>Error loading data</strong><br>' + errMsg +
+          '<br><br><button onclick="loadData()" style="padding:8px 16px;border:1px solid #dc2626;border-radius:8px;background:#fff;color:#dc2626;cursor:pointer;font-weight:600">Retry</button></div>';
+      }
+      mi.textContent = 'Error loading data';
+      return;
+    }
+
+    try {
+      allDaily = pivotGviz(response.table);
+      if (allDaily.length === 0) throw new Error('No daily records found');
+
+      monthKeys = [];
+      var seen = {};
+      for (var i = 0; i < allDaily.length; i++) {
+        if (!seen[allDaily[i].m]) { seen[allDaily[i].m] = true; monthKeys.push(allDaily[i].m); }
+      }
+      monthMap = {};
+      for (var j = 0; j < monthKeys.length; j++) {
+        monthMap[monthKeys[j]] = [];
+        for (var k = 0; k < allDaily.length; k++) {
+          if (allDaily[k].m === monthKeys[j]) monthMap[monthKeys[j]].push(allDaily[k]);
+        }
+      }
+
+      monthlyData = [];
+      for (var mi2 = 0; mi2 < monthKeys.length; mi2++) {
+        var days = monthMap[monthKeys[mi2]];
+        var agg = { label: monthKeys[mi2].replace(/^\d+_/, '').replace(' 20', "'"), month: monthKeys[mi2], days: days.length };
+        for (var fi = 0; fi < ALL_FIELDS.length; fi++) {
+          var sum = 0;
+          for (var di = 0; di < days.length; di++) sum += days[di][ALL_FIELDS[fi]];
+          agg[ALL_FIELDS[fi]] = sum;
+        }
+        monthlyData.push(agg);
+      }
+
+      var mfEl = document.getElementById('mf');
+      while (mfEl.options.length > 1) mfEl.remove(1);
+      for (var oi = 0; oi < monthKeys.length; oi++) {
+        var o = document.createElement('option');
+        o.value = oi;
+        o.text = monthKeys[oi].replace(/^\d+_/, '');
+        mfEl.appendChild(o);
+      }
+
+      document.getElementById('dateRange').textContent = allDaily[0].d + ' to ' + allDaily[allDaily.length - 1].d + ' (' + allDaily.length + ' days)';
+      if (loadingEl) mainEl.style.display = 'none';
+      document.getElementById('dashContent').style.display = 'block';
+      document.getElementById('modeInfo').textContent = 'Showing monthly totals | Last updated: ' + new Date().toLocaleTimeString();
+      renderAll();
+    } catch (err) {
+      if (loadingEl) {
+        loadingEl.innerHTML = '<div class="err"><strong>Error processing data</strong><br>' + err.message +
+          '<br><br><button onclick="loadData()" style="padding:8px 16px;border:1px solid #dc2626;border-radius:8px;background:#fff;color:#dc2626;cursor:pointer;font-weight:600">Retry</button></div>';
+      }
+    }
+  };
+
+  script.onerror = function() {
+    delete window[cbName];
+    btn.disabled = false;
+    btn.textContent = '\u21BB Refresh Data';
+    if (loadingEl) {
+      loadingEl.innerHTML = '<div class="err"><strong>Could not connect to Google Sheets</strong><br>Check your internet connection and make sure the spreadsheet is shared as "Anyone with the link".' +
+        '<br><br><button onclick="loadData()" style="padding:8px 16px;border:1px solid #dc2626;border-radius:8px;background:#fff;color:#dc2626;cursor:pointer;font-weight:600">Retry</button></div>';
+    }
+  };
+
+  script.src = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=responseHandler:' + cbName + '&gid=' + GID;
+  document.head.appendChild(script);
+}
+
+// ===== TAB SWITCHING =====
+var tabBtns = document.querySelectorAll('.tab');
+for (var ti = 0; ti < tabBtns.length; ti++) {
+  (function(b) {
+    b.addEventListener('click', function() {
+      var all = document.querySelectorAll('.tab');
+      for (var j = 0; j < all.length; j++) all[j].classList.remove('on');
+      var panes = document.querySelectorAll('.tc');
+      for (var j = 0; j < panes.length; j++) panes[j].classList.remove('on');
+      b.classList.add('on');
+      document.getElementById('t-' + b.getAttribute('data-t')).classList.add('on');
+    });
+  })(tabBtns[ti]);
+}
+
+// ===== HELPERS =====
+var C = { bl: '#3b82f6', bll: 'rgba(59,130,246,.15)', gn: '#10b981', gnl: 'rgba(16,185,129,.15)', or: '#f59e0b', orl: 'rgba(245,158,11,.15)', rd: '#ef4444', rdl: 'rgba(239,68,68,.15)', pu: '#8b5cf6', pk: '#ec4899', gy: '#6b7280', tl: '#14b8a6', id: '#6366f1' };
+function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
+function avg(v, d) { return d ? (v / d).toFixed(1) : 0; }
+function trend(c, p) { if (!p) return ''; var d = Math.round((c - p) / p * 100); return d > 0 ? '<span class="tr up">&#9650;' + d + '%</span>' : d < 0 ? '<span class="tr dn">&#9660;' + Math.abs(d) + '%</span>' : '<span class="tr">&#9654;0%</span>'; }
+Chart.defaults.font.family = "'Segoe UI',system-ui,sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.padding = 14;
+
+var charts = {};
+function mc(id, cfg) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id), cfg); return charts[id]; }
+
+// ===== RENDER KPIs =====
+function renderKPIs(data) {
+  var d = data[data.length - 1], p = data.length > 1 ? data[data.length - 2] : null;
+  var er = pct(d.te, d.tt);
+  document.getElementById('kR').innerHTML =
+    '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + d.tt.toLocaleString() + '</div><div class="kpi-s">' + d.label + ' (' + d.days + ' days) ' + trend(d.tt, p ? p.tt : 0) + '</div></div>' +
+    '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + d.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% ' + trend(d.te, p ? p.te : 0) + '</div></div>' +
+    '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + d.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhe, d.days) + ' ' + trend(d.hhe, p ? p.hhe : 0) + '</div></div>' +
+    '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + d.hhp.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhp, p ? p.hhp : 0) + '</div></div>' +
+    '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + d.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(d.hhx, d.hhe) + '% of total ' + trend(d.hhx, p ? p.hhx : 0) + '</div></div>' +
+    '<div class="kpi r"><div class="kpi-l">HH Canceled</div><div class="kpi-v">' + d.hhc.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhc, p ? p.hhc : 0) + '</div></div>' +
+    '<div class="kpi o"><div class="kpi-l">HH Unassigned</div><div class="kpi-v">' + d.hhu.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhu, p ? p.hhu : 0) + '</div></div>' +
+    '<div class="kpi r"><div class="kpi-l">Deferrals</div><div class="kpi-v">' + d.def + '</div><div class="kpi-s">' + trend(d.def, p ? p.def : 0) + '</div></div>';
+}
+
+// ===== RENDER CHARTS =====
+function renderCharts(data, labels) {
+  var pr = data.length > 40 ? 1 : 4;
+  mc('c1', { type: 'line', data: { labels: labels, datasets: [
+    { label: 'HH Executed', data: data.map(function(d) { return d.hhe; }), borderColor: C.bl, backgroundColor: C.bll, fill: true, tension: .3, pointRadius: pr },
+    { label: 'HH Programmed', data: data.map(function(d) { return d.hhp; }), borderColor: C.gn, backgroundColor: C.gnl, fill: true, tension: .3, pointRadius: pr },
+    { label: 'HH Extra', data: data.map(function(d) { return d.hhx; }), borderColor: C.or, backgroundColor: C.orl, fill: true, tension: .3, pointRadius: pr > 1 ? 3 : 1 },
+    { label: 'HH Canceled', data: data.map(function(d) { return d.hhc; }), borderColor: C.rd, backgroundColor: C.rdl, fill: true, tension: .3, pointRadius: pr > 1 ? 3 : 1 }
+  ] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Man-Hours' } } } } });
+
+  mc('c2', { type: 'bar', data: { labels: labels, datasets: [
+    { label: 'Total', data: data.map(function(d) { return d.tt; }), backgroundColor: C.bll, borderColor: C.bl, borderWidth: 1 },
+    { label: 'Executed', data: data.map(function(d) { return d.te; }), backgroundColor: C.gnl, borderColor: C.gn, borderWidth: 1 }
+  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
+
+  mc('c3', { type: 'line', data: { labels: labels, datasets: [
+    { label: 'Task Execution Rate (%)', data: data.map(function(d) { return pct(d.te, d.tt); }), borderColor: C.gn, backgroundColor: C.gnl, fill: true, tension: .3, pointRadius: pr > 1 ? 5 : 1 },
+    { label: 'HH Efficiency (%)', data: data.map(function(d) { return pct(d.hhe, d.hhp); }), borderColor: C.bl, backgroundColor: C.bll, fill: false, tension: .3, pointRadius: pr > 1 ? 5 : 1 }
+  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 200, title: { display: true, text: '%' } } } } });
+
+  mc('c4', { type: 'bar', data: { labels: labels, datasets: [
+    { label: 'HH Programmed', data: data.map(function(d) { return d.hhp; }), backgroundColor: C.bl, stack: 'a' },
+    { label: 'HH Extra', data: data.map(function(d) { return d.hhx; }), backgroundColor: C.or, stack: 'a' },
+    { label: 'HH Canceled', data: data.map(function(d) { return d.hhc; }), backgroundColor: C.rd, stack: 'b' },
+    { label: 'HH Unassigned', data: data.map(function(d) { return d.hhu; }), backgroundColor: C.gy, stack: 'b' }
+  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { stacked: true, beginAtZero: true } } } });
+
+  var tot = { hhp: 0, hhx: 0, hhc: 0, hhu: 0 };
+  data.forEach(function(d) { tot.hhp += d.hhp; tot.hhx += d.hhx; tot.hhc += d.hhc; tot.hhu += d.hhu; });
+  mc('c5', { type: 'doughnut', data: { labels: ['Programmed', 'Extra', 'Canceled', 'Unassigned'], datasets: [{ data: [tot.hhp, tot.hhx, tot.hhc, tot.hhu], backgroundColor: [C.bl, C.or, C.rd, C.gy] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+
+  mc('c6', { type: 'bar', data: { labels: labels, datasets: [
+    { label: 'Avg HH Exec/day', data: data.map(function(d) { return data.length === 1 ? d.hhe : +(d.hhe / (d.days || 1)).toFixed(1); }), backgroundColor: C.bl },
+    { label: 'Avg HH Prog/day', data: data.map(function(d) { return data.length === 1 ? d.hhp : +(d.hhp / (d.days || 1)).toFixed(1); }), backgroundColor: C.gn }
+  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: data.length > 31 ? 'HH per day' : 'HH' } } } } });
+
+  mc('c7', { type: 'bar', data: { labels: labels, datasets: [
+    { label: 'Programmed', data: data.map(function(d) { return d.pt; }), backgroundColor: C.bl },
+    { label: 'Extra', data: data.map(function(d) { return d.et; }), backgroundColor: C.or },
+    { label: 'Unassigned LATAM', data: data.map(function(d) { return d.tul; }), backgroundColor: C.pu },
+    { label: 'Unassigned FTWC', data: data.map(function(d) { return d.tuf; }), backgroundColor: C.pk },
+    { label: 'Canceled', data: data.map(function(d) { return d.ct; }), backgroundColor: C.rd }
+  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } } });
+
+  var tTot = { pt: 0, et: 0, tul: 0, tuf: 0, ct: 0 };
+  data.forEach(function(d) { tTot.pt += d.pt; tTot.et += d.et; tTot.tul += d.tul; tTot.tuf += d.tuf; tTot.ct += d.ct; });
+  mc('c8', { type: 'doughnut', data: { labels: ['Programmed', 'Extra', 'Unassigned LATAM', 'Unassigned FTWC', 'Canceled'], datasets: [{ data: [tTot.pt, tTot.et, tTot.tul, tTot.tuf, tTot.ct], backgroundColor: [C.bl, C.or, C.pu, C.pk, C.rd] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+
+  mc('c9', { type: 'bar', data: { labels: labels, datasets: [
+    { label: 'Deferrals', data: data.map(function(d) { return d.def; }), backgroundColor: C.rd },
+    { label: 'Preventive', data: data.map(function(d) { return d.prev; }), backgroundColor: C.tl }
+  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
+
+  var rKeys = ['r_fhh', 'r_fin', 'r_tinc', 'r_tat', 'r_feq', 'r_inf', 'r_wea', 'r_eval', 'r_tav', 'r_noa', 'r_tni'];
+  var rLabels = ['Missing HH (Resource)', 'Financing (Parts/Tools)', 'Incompatible Task', 'TAT (Insufficient Slot)', 'Missing Ground Equip.', 'Infrastructure', 'Weather', 'Damage Evaluation', 'Task In Progress', 'Not Accepted', 'No Task Info'];
+  var rColors = [C.rd, C.or, C.pu, C.bl, C.tl, C.gy, C.id, C.pk, C.gn, '#d946ef', '#a855f7'];
+  var rTotals = rKeys.map(function(k) { return data.reduce(function(s, d) { return s + (d[k] || 0); }, 0); });
+  var filt = rLabels.map(function(l, i) { return { l: l, v: rTotals[i], c: rColors[i], k: rKeys[i] }; }).filter(function(r) { return r.v > 0; }).sort(function(a, b) { return b.v - a.v; });
+
+  mc('c10', { type: 'bar', data: { labels: filt.map(function(r) { return r.l; }), datasets: [{ label: 'Incidents', data: filt.map(function(r) { return r.v; }), backgroundColor: filt.map(function(r) { return r.c; }) }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { beginAtZero: true } }, plugins: { legend: { display: false } } } });
+
+  var topR = filt.slice(0, 5);
+  mc('c11', { type: 'line', data: { labels: labels, datasets: topR.map(function(r) { return { label: r.l, data: data.map(function(d) { return d[r.k] || 0; }), borderColor: r.c, backgroundColor: 'transparent', tension: .3, pointRadius: pr }; }) }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
+}
+
+// ===== RENDER TABLE =====
+function renderTable(data, isDaily) {
+  var t = document.getElementById('dT');
+  document.getElementById('tblTitle').textContent = isDaily ? 'Daily Detail' : 'Monthly Detail Summary';
+  var h = '<thead><tr><th>' + (isDaily ? 'Date' : 'Month') + '</th>' + (isDaily ? '' : '<th class="n">Days</th>') +
+    '<th class="n">Total Tasks</th><th class="n">Executed</th><th class="n">% Exec</th>' +
+    '<th class="n">Programmed</th><th class="n">Extra</th><th class="n">UA LAT</th><th class="n">UA FT</th><th class="n">Canceled</th>' +
+    '<th class="n">HH Exec</th><th class="n">HH Prog</th><th class="n">HH Extra</th>' +
+    '<th class="n">HH Cancel</th><th class="n">HH Unass</th><th class="n">Deferrals</th>' +
+    '</tr></thead><tbody>';
+  var sums = { tt: 0, te: 0, pt: 0, et: 0, tul: 0, tuf: 0, ct: 0, hhe: 0, hhp: 0, hhx: 0, hhc: 0, hhu: 0, def: 0, days: 0 };
+  data.forEach(function(d) {
+    var r = pct(d.te, d.tt), rc = r >= 85 ? 'h' : r >= 70 ? 'm' : 'l';
+    h += '<tr><td><strong>' + (isDaily ? d.d || d.label : d.label) + '</strong></td>' + (isDaily ? '' : '<td class="n">' + d.days + '</td>') +
+      '<td class="n">' + d.tt + '</td><td class="n">' + d.te + '</td><td class="n p ' + rc + '">' + r + '%</td>' +
+      '<td class="n">' + d.pt + '</td><td class="n">' + d.et + '</td><td class="n">' + d.tul + '</td><td class="n">' + d.tuf + '</td><td class="n">' + d.ct + '</td>' +
+      '<td class="n"><strong>' + d.hhe + '</strong></td><td class="n">' + d.hhp + '</td><td class="n">' + d.hhx + '</td>' +
+      '<td class="n">' + d.hhc + '</td><td class="n">' + d.hhu + '</td><td class="n">' + d.def + '</td></tr>';
+    for (var k in sums) { if (d[k] !== undefined) sums[k] += d[k]; }
+    if (!isDaily) sums.days += d.days; else sums.days++;
+  });
+  var sr = pct(sums.te, sums.tt), src = sr >= 85 ? 'h' : sr >= 70 ? 'm' : 'l';
+  h += '<tr style="font-weight:700;background:#f0f4f8"><td>TOTAL</td>' + (isDaily ? '' : '<td class="n">' + sums.days + '</td>') +
+    '<td class="n">' + sums.tt + '</td><td class="n">' + sums.te + '</td><td class="n p ' + src + '">' + sr + '%</td>' +
+    '<td class="n">' + sums.pt + '</td><td class="n">' + sums.et + '</td><td class="n">' + sums.tul + '</td><td class="n">' + sums.tuf + '</td><td class="n">' + sums.ct + '</td>' +
+    '<td class="n">' + sums.hhe + '</td><td class="n">' + sums.hhp + '</td><td class="n">' + sums.hhx + '</td>' +
+    '<td class="n">' + sums.hhc + '</td><td class="n">' + sums.hhu + '</td><td class="n">' + sums.def + '</td></tr></tbody>';
+  t.innerHTML = h;
+}
+
+// ===== MAIN RENDER =====
+function renderAll() {
+  var fv = document.getElementById('mf').value;
+  var mi = document.getElementById('modeInfo');
+  var ts = mi.textContent.indexOf('Last updated') >= 0 ? ' | ' + mi.textContent.split('|').pop().trim() : '';
+  if (fv === 'all') {
+    mi.textContent = 'Showing monthly totals' + ts;
+    renderKPIs(monthlyData);
+    renderCharts(monthlyData, monthlyData.map(function(d) { return d.label; }));
+    renderTable(monthlyData, false);
+  } else {
+    var idx = parseInt(fv);
+    var mk = monthKeys[idx];
+    var days = monthMap[mk];
+    var dayData = days.map(function(d) { var o = {}; for (var k in d) o[k] = d[k]; o.label = d.d; o.days = 1; return o; });
+    mi.textContent = 'Showing daily data for ' + mk.replace(/^\d+_/, '') + ' (' + days.length + ' days)' + ts;
+    renderKPIs([monthlyData[idx]]);
+    renderCharts(dayData, dayData.map(function(d) { return d.d.substring(5); }));
+    renderTable(dayData, true);
+  }
+}
+
+document.getElementById('mf').addEventListener('change', renderAll);
+
+// ===== START =====
+loadData();
+
+</script>
+</body>
+</html>

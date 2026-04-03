@@ -102,7 +102,7 @@ tr:hover td{background:#f8fafc}
     <div class="grd">
       <div class="cc f"><div class="ct">Tasks Breakdown</div><div class="cs">Programmed, Extra, Unassigned (LATAM/FTWC) &amp; Canceled</div><div class="ch t"><canvas id="c7"></canvas></div></div>
       <div class="cc"><div class="ct">Task Types (Selected Period)</div><div class="cs">Percentage distribution</div><div class="ch"><canvas id="c8"></canvas></div></div>
-      <div class="cc"><div class="ct">Deferrals &amp; Preventive</div><div class="cs">Trend over time</div><div class="ch"><canvas id="c9"></canvas></div></div>
+      <div class="cc"><div class="ct">Deferrals &amp; Preventive Closed / Partially Executed</div><div class="cs">Number of deferrals and preventive tasks closed or partially executed over time</div><div class="ch"><canvas id="c9"></canvas></div></div>
     </div>
   </div>
   <div class="tc" id="t-reasons">
@@ -304,17 +304,49 @@ function mc(id, cfg) { if (charts[id]) charts[id].destroy(); charts[id] = new Ch
 
 // ===== RENDER KPIs =====
 function renderKPIs(data) {
-  var d = data[data.length - 1], p = data.length > 1 ? data[data.length - 2] : null;
-  var er = pct(d.te, d.tt);
-  document.getElementById('kR').innerHTML =
-    '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + d.tt.toLocaleString() + '</div><div class="kpi-s">' + d.label + ' (' + d.days + ' days) ' + trend(d.tt, p ? p.tt : 0) + '</div></div>' +
-    '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + d.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% ' + trend(d.te, p ? p.te : 0) + '</div></div>' +
-    '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + d.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhe, d.days) + ' ' + trend(d.hhe, p ? p.hhe : 0) + '</div></div>' +
-    '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + d.hhp.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhp, p ? p.hhp : 0) + '</div></div>' +
-    '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + d.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(d.hhx, d.hhe) + '% of total ' + trend(d.hhx, p ? p.hhx : 0) + '</div></div>' +
-    '<div class="kpi r"><div class="kpi-l">HH Canceled</div><div class="kpi-v">' + d.hhc.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhc, p ? p.hhc : 0) + '</div></div>' +
-    '<div class="kpi o"><div class="kpi-l">HH Unassigned</div><div class="kpi-v">' + d.hhu.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhu, p ? p.hhu : 0) + '</div></div>' +
-    '<div class="kpi r"><div class="kpi-l">Deferrals</div><div class="kpi-v">' + d.def + '</div><div class="kpi-s">' + trend(d.def, p ? p.def : 0) + '</div></div>';
+  var isAllMonths = data.length > 1 && document.getElementById('mf').value === 'all';
+
+  if (isAllMonths) {
+    // Calculate totals across all months
+    var tot = { tt:0, te:0, hhe:0, hhp:0, hhx:0, hhc:0, hhu:0, def:0, days:0 };
+    data.forEach(function(d) {
+      tot.tt += d.tt; tot.te += d.te; tot.hhe += d.hhe; tot.hhp += d.hhp;
+      tot.hhx += d.hhx; tot.hhc += d.hhc; tot.hhu += d.hhu; tot.def += d.def; tot.days += d.days;
+    });
+    var n = data.length;
+    var er = pct(tot.te, tot.tt);
+    var avgTT = Math.round(tot.tt / n);
+    var avgTE = Math.round(tot.te / n);
+    var avgHHE = Math.round(tot.hhe / n);
+    var avgHHP = Math.round(tot.hhp / n);
+    var avgHHX = Math.round(tot.hhx / n);
+    var avgHHC = Math.round(tot.hhc / n);
+    var avgHHU = Math.round(tot.hhu / n);
+    var avgDEF = +(tot.def / n).toFixed(1);
+
+    document.getElementById('kR').innerHTML =
+      '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + tot.tt.toLocaleString() + '</div><div class="kpi-s">' + n + ' months (' + tot.days + ' days) · Avg/mo: ' + avgTT.toLocaleString() + '</div></div>' +
+      '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + tot.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% · Avg/mo: ' + avgTE.toLocaleString() + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + tot.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(tot.hhe, tot.days) + ' · Avg/mo: ' + avgHHE.toLocaleString() + '</div></div>' +
+      '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + tot.hhp.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(tot.hhp, tot.days) + ' · Avg/mo: ' + avgHHP.toLocaleString() + '</div></div>' +
+      '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + tot.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(tot.hhx, tot.hhe) + '% of total · Avg/mo: ' + avgHHX.toLocaleString() + '</div></div>' +
+      '<div class="kpi r"><div class="kpi-l">HH Canceled</div><div class="kpi-v">' + tot.hhc.toLocaleString() + '</div><div class="kpi-s">Avg/mo: ' + avgHHC.toLocaleString() + '</div></div>' +
+      '<div class="kpi o"><div class="kpi-l">HH Unassigned</div><div class="kpi-v">' + tot.hhu.toLocaleString() + '</div><div class="kpi-s">Avg/mo: ' + avgHHU.toLocaleString() + '</div></div>' +
+      '<div class="kpi r"><div class="kpi-l">Deferrals Closed / Partial</div><div class="kpi-v">' + tot.def + '</div><div class="kpi-s">Avg/mo: ' + avgDEF + '</div></div>';
+  } else {
+    // Single month or daily view — show last entry with trend vs previous
+    var d = data[data.length - 1], p = data.length > 1 ? data[data.length - 2] : null;
+    var er = pct(d.te, d.tt);
+    document.getElementById('kR').innerHTML =
+      '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + d.tt.toLocaleString() + '</div><div class="kpi-s">' + d.label + ' (' + d.days + ' days) ' + trend(d.tt, p ? p.tt : 0) + '</div></div>' +
+      '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + d.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% ' + trend(d.te, p ? p.te : 0) + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + d.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhe, d.days) + ' ' + trend(d.hhe, p ? p.hhe : 0) + '</div></div>' +
+      '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + d.hhp.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhp, d.days) + ' ' + trend(d.hhp, p ? p.hhp : 0) + '</div></div>' +
+      '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + d.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(d.hhx, d.hhe) + '% of total ' + trend(d.hhx, p ? p.hhx : 0) + '</div></div>' +
+      '<div class="kpi r"><div class="kpi-l">HH Canceled</div><div class="kpi-v">' + d.hhc.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhc, p ? p.hhc : 0) + '</div></div>' +
+      '<div class="kpi o"><div class="kpi-l">HH Unassigned</div><div class="kpi-v">' + d.hhu.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhu, p ? p.hhu : 0) + '</div></div>' +
+      '<div class="kpi r"><div class="kpi-l">Deferrals Closed / Partial</div><div class="kpi-v">' + d.def + '</div><div class="kpi-s">' + trend(d.def, p ? p.def : 0) + '</div></div>';
+  }
 }
 
 // ===== RENDER CHARTS =====
@@ -371,7 +403,7 @@ function renderCharts(data, labels) {
   ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
 
   var rKeys = ['r_fhh', 'r_fin', 'r_tinc', 'r_tat', 'r_feq', 'r_inf', 'r_wea', 'r_eval', 'r_tav', 'r_noa', 'r_tni'];
-  var rLabels = ['Missing HH (Resource)', 'Financing (Parts/Tools)', 'Incompatible Task', 'TAT (Insufficient Slot)', 'Missing Ground Equip.', 'Infrastructure', 'Weather', 'Damage Evaluation', 'Task In Progress', 'Not Accepted', 'No Task Info'];
+  var rLabels = ['Missing HH (Resource)', 'Financing (Parts/Tools)', 'Incompatible Task', 'TAT (Insufficient Slot)', 'Missing Ground Equip.', 'Infrastructure', 'Weather', 'Deferral Evaluation / TSM - Troubleshooting', 'Partially Completed (Preventive / IH)', 'Not Accepted', 'No Task Info'];
   var rColors = [C.rd, C.or, C.pu, C.bl, C.tl, C.gy, C.id, C.pk, C.gn, '#d946ef', '#a855f7'];
   var rTotals = rKeys.map(function(k) { return data.reduce(function(s, d) { return s + (d[k] || 0); }, 0); });
   var filt = rLabels.map(function(l, i) { return { l: l, v: rTotals[i], c: rColors[i], k: rKeys[i] }; }).filter(function(r) { return r.v > 0; }).sort(function(a, b) { return b.v - a.v; });

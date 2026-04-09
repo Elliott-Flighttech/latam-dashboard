@@ -1,476 +1,502 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LATAM Work Report Dashboard - Flight Tech Worldwide Corp</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<title>Flight Tech — Planning Board</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
 <style>
-:root{--pri:#1a56db;--pri-l:#3b82f6;--sec:#059669;--warn:#d97706;--dng:#dc2626;--bg:#f0f4f8;--card:#fff;--txt:#1e293b;--mut:#64748b;--brd:#e2e8f0;--sh:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);--sh2:0 4px 6px rgba(0,0,0,.07),0 2px 4px rgba(0,0,0,.06)}
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh}
-.hdr{background:linear-gradient(135deg,#1e3a5f,#1a56db);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 2px 10px rgba(0,0,0,.15);flex-wrap:wrap;gap:10px}
-.hdr h1{font-size:21px;font-weight:700;letter-spacing:-.3px}
-.hdr .sub{font-size:12px;opacity:.8;margin-top:2px}
-.hdr .logo{display:flex;align-items:center;gap:12px}
-.hdr .ico{width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px}
-.hdr .dr{font-size:12px;background:rgba(255,255,255,.12);padding:5px 12px;border-radius:8px}
-.ctl{padding:14px 28px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--brd)}
-.ctl label{font-size:12px;font-weight:600;color:var(--mut)}
-.ctl select{padding:6px 10px;border:1px solid var(--brd);border-radius:8px;font-size:13px;background:#fff;cursor:pointer;outline:none}
-.ctl select:focus{border-color:var(--pri-l);box-shadow:0 0 0 3px rgba(59,130,246,.15)}
-.ctl .mode-info{font-size:11px;color:var(--pri-l);font-weight:600;margin-left:auto;background:rgba(59,130,246,.08);padding:4px 10px;border-radius:6px}
-.ctl .refresh-btn{padding:5px 12px;border:1px solid var(--brd);border-radius:8px;font-size:12px;background:#fff;cursor:pointer;font-weight:600;color:var(--pri);transition:.15s}
-.ctl .refresh-btn:hover{background:var(--pri);color:#fff}
-.cnt{padding:0 28px 28px}
-.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin:18px 0}
-.kpi{background:var(--card);border-radius:12px;padding:16px 18px;box-shadow:var(--sh);border-left:4px solid var(--pri);transition:transform .15s,box-shadow .15s}
-.kpi:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
-.kpi.g{border-left-color:var(--sec)}.kpi.o{border-left-color:var(--warn)}.kpi.r{border-left-color:var(--dng)}
-.kpi-l{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:600}
-.kpi-v{font-size:26px;font-weight:700;margin:3px 0}
-.kpi.g .kpi-v{color:var(--sec)}.kpi.o .kpi-v{color:var(--warn)}.kpi.r .kpi-v{color:var(--dng)}
-.kpi-s{font-size:11px;color:var(--mut)}
-.tr{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:600}
-.tr.up{color:var(--sec)}.tr.dn{color:var(--dng)}
-.tabs{display:flex;gap:4px;margin-bottom:18px}
-.tab{padding:7px 16px;border:none;background:transparent;color:var(--mut);font-size:13px;font-weight:600;cursor:pointer;border-radius:8px;transition:.15s}
-.tab.on{background:var(--pri);color:#fff}.tab:hover:not(.on){background:#e2e8f0}
-.tc{display:none}.tc.on{display:block}
-.grd{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
-.cc{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--sh)}
-.cc.f{grid-column:1/-1}
-.ct{font-size:14px;font-weight:700;margin-bottom:3px}
-.cs{font-size:11px;color:var(--mut);margin-bottom:14px}
-.ch{position:relative;height:290px}.ch.t{height:340px}
-.tc-tbl{background:var(--card);border-radius:12px;padding:18px;box-shadow:var(--sh);overflow-x:auto}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{background:#f8fafc;font-weight:600;text-align:left;padding:8px 10px;border-bottom:2px solid var(--brd);white-space:nowrap;position:sticky;top:0}
-td{padding:7px 10px;border-bottom:1px solid var(--brd)}
-tr:hover td{background:#f8fafc}
-.n{text-align:right;font-variant-numeric:tabular-nums}
-.p{font-weight:600}.p.h{color:var(--sec)}.p.m{color:var(--warn)}.p.l{color:var(--dng)}
-.loading{text-align:center;padding:60px;color:var(--mut);font-size:16px}
-.loading .spin{display:inline-block;width:28px;height:28px;border:3px solid var(--brd);border-top-color:var(--pri);border-radius:50%;animation:sp .8s linear infinite;margin-bottom:12px}
-@keyframes sp{to{transform:rotate(360deg)}}
-.err{text-align:center;padding:40px;color:var(--dng);background:#fef2f2;border-radius:12px;margin:20px}
-@media(max-width:900px){.grd{grid-template-columns:1fr}.hdr{flex-direction:column;align-items:flex-start}.cnt{padding:0 14px 20px}.ctl{padding:10px 14px}}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d1117; font-family: 'DM Sans', sans-serif; }
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::selection { background: rgba(14,165,233,0.3); }
+select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238892a4' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px !important; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+.flight-row { animation: fadeIn 0.3s ease; }
+.flight-row:hover { background: rgba(255,255,255,0.03) !important; }
+.stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+.view-btn { transition: all 0.2s; }
+.view-btn:hover { background: rgba(255,255,255,0.1) !important; }
 </style>
 </head>
 <body>
-<div class="hdr">
-  <div class="logo">
-    <div class="ico">&#9992;</div>
-    <div><h1>LATAM Work Report Dashboard</h1><div class="sub">Flight Tech Worldwide Corp &mdash; Work Planning &amp; Control</div></div>
-  </div>
-  <div class="dr" id="dateRange">Loading...</div>
-</div>
-<div class="ctl">
-  <label>Period:</label>
-  <select id="mf"><option value="all">All Months (Monthly View)</option></select>
-  <button class="refresh-btn" id="refreshBtn" onclick="loadData()">&#8635; Refresh Data</button>
-  <div class="mode-info" id="modeInfo">Loading data from Google Sheets...</div>
-</div>
-<div class="cnt" id="mainContent">
-  <div class="loading" id="loadingMsg"><div class="spin"></div><br>Loading data from Google Sheets...<br><span style="font-size:12px;margin-top:8px;display:block">Connecting to Master_Work_Report spreadsheet</span></div>
-</div>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useMemo, useCallback, Fragment } = React;
 
-<div class="cnt" id="dashContent" style="display:none">
-  <div class="kpi-row" id="kR"></div>
-  <div class="tabs">
-    <button class="tab on" data-t="overview">Overview</button>
-    <button class="tab" data-t="hh">Man-Hours (HH)</button>
-    <button class="tab" data-t="tasks">Tasks</button>
-    <button class="tab" data-t="reasons">Reasons</button>
-    <button class="tab" data-t="table">Detail Table</button>
-  </div>
-  <div class="tc on" id="t-overview">
-    <div class="grd">
-      <div class="cc f"><div class="ct">HH Executed vs Programmed Trend</div><div class="cs">Man-hours evolution over time</div><div class="ch t"><canvas id="c1"></canvas></div></div>
-      <div class="cc"><div class="ct">Tasks: Executed vs Total</div><div class="cs">Task count per period</div><div class="ch"><canvas id="c2"></canvas></div></div>
-      <div class="cc"><div class="ct">Execution Rate (%)</div><div class="cs">Percentage of tasks executed over total</div><div class="ch"><canvas id="c3"></canvas></div></div>
-    </div>
-  </div>
-  <div class="tc" id="t-hh">
-    <div class="grd">
-      <div class="cc f"><div class="ct">Man-Hours Breakdown</div><div class="cs">Programmed, Extra, Canceled &amp; Unassigned</div><div class="ch t"><canvas id="c4"></canvas></div></div>
-      <div class="cc"><div class="ct">HH Distribution (Selected Period)</div><div class="cs">Proportion of each HH category</div><div class="ch"><canvas id="c5"></canvas></div></div>
-      <div class="cc"><div class="ct">Daily Average HH</div><div class="cs">Man-hours executed per working day</div><div class="ch"><canvas id="c6"></canvas></div></div>
-    </div>
-  </div>
-  <div class="tc" id="t-tasks">
-    <div class="grd">
-      <div class="cc f"><div class="ct">Tasks Breakdown</div><div class="cs">Programmed, Extra, Unassigned (LATAM/FTWC) &amp; Canceled</div><div class="ch t"><canvas id="c7"></canvas></div></div>
-      <div class="cc"><div class="ct">Task Types (Selected Period)</div><div class="cs">Percentage distribution</div><div class="ch"><canvas id="c8"></canvas></div></div>
-      <div class="cc"><div class="ct">Deferrals &amp; Preventive Closed / Partially Executed</div><div class="cs">Number of deferrals and preventive tasks closed or partially executed over time</div><div class="ch"><canvas id="c9"></canvas></div></div>
-    </div>
-  </div>
-  <div class="tc" id="t-reasons">
-    <div class="grd">
-      <div class="cc f"><div class="ct">Non-Execution / Cancellation Reasons</div><div class="cs">Cumulative total by reason category</div><div class="ch t"><canvas id="c10"></canvas></div></div>
-      <div class="cc f"><div class="ct">Top Reasons Over Time</div><div class="cs">Trend of main reasons</div><div class="ch t"><canvas id="c11"></canvas></div></div>
-    </div>
-  </div>
-  <div class="tc" id="t-table">
-    <div class="tc-tbl"><div class="ct" style="margin-bottom:14px" id="tblTitle">Monthly Detail Summary</div><div style="max-height:600px;overflow:auto"><table id="dT"></table></div></div>
-  </div>
-</div>
+// ─── Storage helpers (localStorage for GitHub Pages) ───
+const STORAGE_KEY = "ft-flights";
+const CLIENTS_KEY = "ft-clients";
+const SHEETS_CONFIG_KEY = "ft-sheets-config";
 
-<script>
-// ===== GOOGLE SHEET CONFIG =====
-var SHEET_ID = '1XHozgWnbnOdytzk34mK8DiZak92TrVRMPcHP3GV8XFU';
-var GID = '773890483';
+const HARDCODED_SHEETS_CONFIG = {
+  sheetId: "1Je0HLCFI8K31bGQIv-4vpseo3hcZXZRkHpgTYRneDPI",
+  tabs: [
+    { gid: "101729361", clientId: "c1", name: "LTM - LATAM" },
+    { gid: "1572234093", clientId: "c2", name: "BOA - Boliviana" },
+    { gid: "1516496036", clientId: "c3", name: "COPC - Copa Cargo" },
+    { gid: "1367163560", clientId: "c4", name: "RAM - Royal Air Maroc" },
+    { gid: "540039293", clientId: "c5", name: "F2S - Fly2Sky" },
+    { gid: "1731203199", clientId: "c6", name: "TAB" },
+  ]
+};
 
-// Metric prefix -> field mapping
-var METRIC_MAP = [
-  ['Total Task', 'tt'], ['Task Executed', 'te'],
-  ['Task Unassigned by LATAM', 'tul'], ['Task Unassigned by FTWC', 'tuf'],
-  ['HH Executed', 'hhe'], ['HH Programmed', 'hhp'], ['HH Extra', 'hhx'],
-  ['HH Canceled', 'hhc'], ['HH Unassigned', 'hhu'],
-  ['Programmed Task', 'pt'], ['Extra Task', 'et'], ['Canceled Task', 'ct'],
-  ['Extra Total Dailys', 'etd'], ['Extra Total Transits', 'ett'],
-  ['Defferals', 'def'], ['Preventative', 'prev'],
-  ['FALTA HH', 'r_fhh'], ['FINANCIAMIENTO', 'r_fin'],
-  ['TAREA INCOMPATIBLE', 'r_tinc'], ['TAT', 'r_tat'],
-  ['FALTA DE EQUIPOS', 'r_feq'], ['INFRAESTRUCTURA', 'r_inf'],
-  ['WEATHER', 'r_wea'], ['EVALUACION DE DIFERIDO', 'r_eval'],
-  ['TAREA AVANCE PARCIAL', 'r_tav'], ['NO ACEPTADA', 'r_noa'],
-  ['TAREA NO TIENE', 'r_tni']
+const buildSheetCSVUrl = (sheetId, gid) =>
+  `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+
+const parseCSV = (text) => {
+  const lines = text.split("\n").filter((l) => l.trim());
+  if (lines.length < 2) return [];
+  const headers = lines[0].split(",").map((h) => h.trim().replace(/^"|"$/g, ""));
+  return lines.slice(1).map((line) => {
+    const values = [];
+    let current = "";
+    let inQuotes = false;
+    for (const ch of line) {
+      if (ch === '"') { inQuotes = !inQuotes; }
+      else if (ch === "," && !inQuotes) { values.push(current.trim()); current = ""; }
+      else { current += ch; }
+    }
+    values.push(current.trim());
+    const obj = {};
+    headers.forEach((h, i) => { obj[h] = (values[i] || "").replace(/^"|"$/g, ""); });
+    return obj;
+  }).filter((row) => row.tail_number && row.arrival_date);
+};
+
+const sheetRowToFlight = (row, clientId) => ({
+  id: `gs-${clientId}-${row.tail_number}-${row.arrival_date}-${row.arrival_time}`,
+  clientId,
+  tailNumber: (row.tail_number || "").toUpperCase(),
+  arrivalDate: row.arrival_date || "",
+  arrivalTime: row.arrival_time || "00:00",
+  departureDate: row.departure_date || row.arrival_date || "",
+  departureTime: row.departure_time || "23:59",
+  serviceType: row.service_type || "transit",
+  aircraftType: row.aircraft_type || "",
+  bay: row.bay || "",
+  notes: row.notes || "",
+  status: row.status || "scheduled",
+});
+
+const DEFAULT_CLIENTS = [
+  { id: "c1", name: "LATAM", color: "#1E3A5F", short: "LTM" },
+  { id: "c2", name: "Boliviana de Aviación", color: "#F97316", short: "BOA" },
+  { id: "c3", name: "Copa Cargo", color: "#0EA5E9", short: "COPC" },
+  { id: "c4", name: "Royal Air Maroc", color: "#10B981", short: "RAM" },
+  { id: "c5", name: "Fly2Sky", color: "#8B5CF6", short: "F2S" },
+  { id: "c6", name: "TAB", color: "#EF4444", short: "TAB" },
 ];
-function metricToField(m) {
-  for (var i = 0; i < METRIC_MAP.length; i++) {
-    if (m.indexOf(METRIC_MAP[i][0]) === 0) return METRIC_MAP[i][1];
-  }
-  return null;
+
+const SERVICE_TYPES = [
+  { id: "transit", label: "Transit", labelEs: "Tránsito" },
+  { id: "a-check", label: "A-Check", labelEs: "A-Check" },
+  { id: "b-check", label: "B-Check", labelEs: "B-Check" },
+  { id: "c-check", label: "C-Check", labelEs: "C-Check" },
+  { id: "scheduled", label: "Scheduled Work", labelEs: "Trabajo Programado" },
+  { id: "aog", label: "AOG", labelEs: "AOG" },
+];
+
+const loadData = (key, fallback) => {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch { return fallback; }
+};
+const saveData = (key, data) => {
+  try { localStorage.setItem(key, JSON.stringify(data)); } catch(e) { console.error(e); }
+};
+
+const MIAMI_TZ = "America/New_York";
+const fmtDay = (d) => new Date(d).toLocaleDateString("en-US", { timeZone: MIAMI_TZ, weekday: "short", month: "short", day: "numeric" });
+const todayStr = () => new Date().toLocaleDateString("en-CA", { timeZone: MIAMI_TZ });
+
+const getWeekRange = (dateStr) => {
+  const d = new Date(dateStr + "T12:00:00");
+  const day = d.getDay();
+  const mon = new Date(d); mon.setDate(d.getDate() - ((day + 6) % 7));
+  const sun = new Date(mon); sun.setDate(mon.getDate() + 6);
+  return { start: mon.toISOString().slice(0, 10), end: sun.toISOString().slice(0, 10) };
+};
+const getMonthRange = (dateStr) => {
+  const d = new Date(dateStr + "T12:00:00");
+  return { start: new Date(d.getFullYear(), d.getMonth(), 1).toISOString().slice(0,10), end: new Date(d.getFullYear(), d.getMonth()+1, 0).toISOString().slice(0,10) };
+};
+const getDatesInRange = (start, end) => {
+  const dates = []; let cur = new Date(start + "T12:00:00"); const last = new Date(end + "T12:00:00");
+  while (cur <= last) { dates.push(cur.toISOString().slice(0, 10)); cur.setDate(cur.getDate() + 1); }
+  return dates;
+};
+const timeToMinutes = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + (m || 0); };
+
+const Icon = ({ name, size = 18 }) => {
+  const icons = {
+    plane: React.createElement("path", {d:"M21 16v-2l-8-5V3.5A1.5 1.5 0 0 0 11.5 2 1.5 1.5 0 0 0 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"}),
+    plus: React.createElement(Fragment, null, React.createElement("line",{x1:12,y1:5,x2:12,y2:19}), React.createElement("line",{x1:5,y1:12,x2:19,y2:12})),
+    calendar: React.createElement(Fragment, null, React.createElement("rect",{x:3,y:4,width:18,height:18,rx:2,ry:2}), React.createElement("line",{x1:16,y1:2,x2:16,y2:6}), React.createElement("line",{x1:8,y1:2,x2:8,y2:6}), React.createElement("line",{x1:3,y1:10,x2:21,y2:10})),
+    list: React.createElement(Fragment, null, React.createElement("line",{x1:8,y1:6,x2:21,y2:6}), React.createElement("line",{x1:8,y1:12,x2:21,y2:12}), React.createElement("line",{x1:8,y1:18,x2:21,y2:18}), React.createElement("line",{x1:3,y1:6,x2:3.01,y2:6}), React.createElement("line",{x1:3,y1:12,x2:3.01,y2:12}), React.createElement("line",{x1:3,y1:18,x2:3.01,y2:18})),
+    grid: React.createElement(Fragment, null, React.createElement("rect",{x:3,y:3,width:7,height:7}), React.createElement("rect",{x:14,y:3,width:7,height:7}), React.createElement("rect",{x:3,y:14,width:7,height:7}), React.createElement("rect",{x:14,y:14,width:7,height:7})),
+    trash: React.createElement(Fragment, null, React.createElement("polyline",{points:"3 6 5 6 21 6"}), React.createElement("path",{d:"M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"})),
+    edit: React.createElement(Fragment, null, React.createElement("path",{d:"M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"}), React.createElement("path",{d:"M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"})),
+    x: React.createElement(Fragment, null, React.createElement("line",{x1:18,y1:6,x2:6,y2:18}), React.createElement("line",{x1:6,y1:6,x2:18,y2:18})),
+    check: React.createElement("polyline",{points:"20 6 9 17 4 12"}),
+    settings: React.createElement(Fragment, null, React.createElement("circle",{cx:12,cy:12,r:3}), React.createElement("path",{d:"M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"})),
+    chevLeft: React.createElement("polyline",{points:"15 18 9 12 15 6"}),
+    chevRight: React.createElement("polyline",{points:"9 18 15 12 9 6"}),
+    clock: React.createElement(Fragment, null, React.createElement("circle",{cx:12,cy:12,r:10}), React.createElement("polyline",{points:"12 6 12 12 16 14"})),
+  };
+  return React.createElement("svg", {width:size, height:size, viewBox:"0 0 24 24", fill:"none", stroke:"currentColor", strokeWidth:"2", strokeLinecap:"round", strokeLinejoin:"round"}, icons[name]);
+};
+
+const Modal = ({ open, onClose, title, children, wide }) => {
+  if (!open) return null;
+  return <div onClick={onClose} style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",backdropFilter:"blur(4px)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:1000,padding:16}}>
+    <div onClick={e=>e.stopPropagation()} style={{background:"#1a1f2e",borderRadius:16,padding:28,width:wide?640:460,maxWidth:"95vw",maxHeight:"90vh",overflowY:"auto",border:"1px solid rgba(255,255,255,0.08)",boxShadow:"0 24px 80px rgba(0,0,0,0.6)"}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+        <h2 style={{margin:0,fontSize:18,fontWeight:700,color:"#f0f4f8"}}>{title}</h2>
+        <button onClick={onClose} style={{background:"none",border:"none",color:"#8892a4",cursor:"pointer",padding:4}}><Icon name="x"/></button>
+      </div>
+      {children}
+    </div>
+  </div>;
+};
+
+const Field = ({label, children}) => <div style={{marginBottom:16}}>
+  <label style={{display:"block",fontSize:12,fontWeight:600,color:"#8892a4",marginBottom:6,textTransform:"uppercase",letterSpacing:"0.05em"}}>{label}</label>
+  {children}
+</div>;
+
+const inputStyle = {width:"100%",padding:"10px 14px",background:"#0f1320",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,color:"#f0f4f8",fontSize:14,outline:"none",boxSizing:"border-box",fontFamily:"'JetBrains Mono', monospace"};
+const btnPrimary = {padding:"10px 24px",background:"linear-gradient(135deg, #0EA5E9, #6366F1)",border:"none",borderRadius:10,color:"#fff",fontSize:14,fontWeight:600,cursor:"pointer"};
+const btnSecondary = {padding:"10px 24px",background:"rgba(255,255,255,0.06)",border:"1px solid rgba(255,255,255,0.1)",borderRadius:10,color:"#c1c9d6",fontSize:14,fontWeight:600,cursor:"pointer"};
+
+const generateSampleFlights = () => [
+  {id:"copa01",clientId:"c3",tailNumber:"HP-1990",arrivalDate:"2026-04-09",arrivalTime:"03:00",departureDate:"2026-04-09",departureTime:"04:54",serviceType:"transit",notes:"CM8900/CM8901 | SAP→MIA→PTY | B737-800BCF | 1h54m ground"},
+  {id:"copa02",clientId:"c3",tailNumber:"HP-1522",arrivalDate:"2026-04-11",arrivalTime:"05:00",departureDate:"2026-04-11",departureTime:"07:00",serviceType:"transit",notes:"CM8900/CM8901 | PTY→MIA→PTY | B737-800BCF | 2hr ground"},
+  {id:"copa03",clientId:"c3",tailNumber:"HP-1990",arrivalDate:"2026-04-16",arrivalTime:"03:00",departureDate:"2026-04-16",departureTime:"04:54",serviceType:"transit",notes:"CM8900/CM8901 | SAP→MIA→PTY | B737-800BCF | 1h54m ground"},
+  {id:"copa04",clientId:"c3",tailNumber:"HP-1522",arrivalDate:"2026-04-18",arrivalTime:"05:00",departureDate:"2026-04-18",departureTime:"07:00",serviceType:"transit",notes:"CM8900/CM8901 | PTY→MIA→PTY | B737-800BCF | 2hr ground"},
+  {id:"copa05",clientId:"c3",tailNumber:"HP-1990",arrivalDate:"2026-04-23",arrivalTime:"03:00",departureDate:"2026-04-23",departureTime:"04:54",serviceType:"transit",notes:"CM8900/CM8901 | SAP→MIA→PTY | B737-800BCF | 1h54m ground"},
+  {id:"copa06",clientId:"c3",tailNumber:"HP-1522",arrivalDate:"2026-04-25",arrivalTime:"05:00",departureDate:"2026-04-25",departureTime:"07:00",serviceType:"transit",notes:"CM8900/CM8901 | PTY→MIA→PTY | B737-800BCF | 2hr ground"},
+  {id:"copa07",clientId:"c3",tailNumber:"HP-1990",arrivalDate:"2026-04-30",arrivalTime:"03:00",departureDate:"2026-04-30",departureTime:"04:54",serviceType:"transit",notes:"CM8900/CM8901 | SAP→MIA→PTY | B737-800BCF | 1h54m ground"},
+  {id:"ram01",clientId:"c4",tailNumber:"CN-RGT",arrivalDate:"2026-04-01",arrivalTime:"19:45",departureDate:"2026-04-01",departureTime:"21:45",serviceType:"transit",notes:"AT204/AT205 | CMN→MIA→CMN | B787-8 | 2hr ground"},
+  {id:"ram02",clientId:"c4",tailNumber:"CN-RGU",arrivalDate:"2026-04-03",arrivalTime:"19:45",departureDate:"2026-04-03",departureTime:"21:45",serviceType:"transit",notes:"AT204/AT205 | CMN→MIA→CMN | B787-8 | 2hr ground"},
+  {id:"ram03",clientId:"c4",tailNumber:"CN-RGT",arrivalDate:"2026-04-05",arrivalTime:"19:45",departureDate:"2026-04-05",departureTime:"21:45",serviceType:"transit",notes:"AT204/AT205 | CMN→MIA→CMN | B787-8 | 2hr ground"},
+  {id:"ram04",clientId:"c4",tailNumber:"CN-RGU",arrivalDate:"2026-04-08",arrivalTime:"19:45",departureDate:"2026-04-08",departureTime:"21:45",serviceType:"transit",notes:"AT204/AT205 | CMN→MIA→CMN | B787-8 | 2hr ground"},
+  {id:"ram05",clientId:"c4",tailNumber:"CN-RGC",arrivalDate:"2026-04-10",arrivalTime:"19:45",departureDate:"2026-04-10",departureTime:"21:45",serviceType:"transit",notes:"AT204/AT205 | CMN→MIA→CMN | B787-8 | 2hr ground"},
+  {id:"ram06",clientId:"c4",tailNumber:"CN-RGC",arrivalDate:"2026-04-12",arrivalTime:"19:45",departureDate:"2026-04-12",departureTime:"21:45",serviceType:"transit",notes:"AT204/AT205 | CMN→MIA→CMN | B787-8 | 2hr ground"},
+];
+
+function StatusBadge({flight}) {
+  const now = new Date();
+  const arr = new Date(flight.arrivalDate + "T" + flight.arrivalTime);
+  const dep = new Date((flight.departureDate||flight.arrivalDate) + "T" + flight.departureTime);
+  let label="Scheduled", color="#8892a4", bg="rgba(136,146,164,0.1)";
+  if(now>=arr&&now<=dep){label="On Bay";color="#10B981";bg="rgba(16,185,129,0.15)";}
+  else if(now>dep){label="Completed";color="#6366F1";bg="rgba(99,102,241,0.15)";}
+  return <span style={{fontSize:11,fontWeight:600,padding:"3px 10px",borderRadius:20,color,background:bg,whiteSpace:"nowrap"}}>{label}</span>;
 }
-var ALL_FIELDS = ['tt','te','tul','tuf','ct','pt','et','etd','ett','def','prev','hhe','hhp','hhx','hhc','hhu','r_fhh','r_fin','r_tinc','r_tat','r_feq','r_inf','r_wea','r_eval','r_tav','r_noa','r_tni'];
 
-// ===== PIVOT GVIZ RESPONSE TO WIDE =====
-// Columns verified: Report_Date(0), Month_Folder(1), File_Name(2), Tab_Read(3), Group(4), RowIndex(5), Metric(6), Value(7)
-function pivotGviz(table) {
-  var dateMap = {};
-  var rows = table.rows;
-  for (var r = 0; r < rows.length; r++) {
-    var cells = rows[r].c;
-    if (!cells || cells.length < 8) continue;
-    var date = cells[0] ? String(cells[0].f || cells[0].v || '') : '';
-    var month = cells[1] ? String(cells[1].f || cells[1].v || '') : '';
-    var metric = cells[6] ? String(cells[6].v || '') : '';
-    var val = cells[7] ? (parseFloat(cells[7].v) || 0) : 0;
-    if (!date || !metric) continue;
-    if (!dateMap[date]) {
-      dateMap[date] = { d: date, m: month };
-      for (var f = 0; f < ALL_FIELDS.length; f++) dateMap[date][ALL_FIELDS[f]] = 0;
-    }
-    var field = metricToField(metric);
-    if (field) dateMap[date][field] = val;
-  }
-  var result = [];
-  for (var k in dateMap) result.push(dateMap[k]);
-  result.sort(function(a, b) { return a.d < b.d ? -1 : a.d > b.d ? 1 : 0; });
-  return result;
+function FlightForm({clients,initial,onSave,onDelete,onCancel,selectedDate}) {
+  const [form, setForm] = useState(initial || {clientId:clients[0]?.id||"",tailNumber:"",arrivalDate:selectedDate,arrivalTime:"08:00",departureDate:selectedDate,departureTime:"18:00",serviceType:"transit",notes:""});
+  const update = (k,v) => setForm(p=>({...p,[k]:v}));
+  const handleSave = () => { if(!form.tailNumber.trim()) return; onSave(form); };
+  return <>
+    <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16}}>
+      <Field label="Client"><select value={form.clientId} onChange={e=>update("clientId",e.target.value)} style={inputStyle}>{clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></Field>
+      <Field label="Tail Number"><input value={form.tailNumber} onChange={e=>update("tailNumber",e.target.value.toUpperCase())} placeholder="N12345" style={inputStyle}/></Field>
+      <Field label="Arrival Date"><input type="date" value={form.arrivalDate} onChange={e=>update("arrivalDate",e.target.value)} style={inputStyle}/></Field>
+      <Field label="Arrival Time (ETA)"><input type="time" value={form.arrivalTime} onChange={e=>update("arrivalTime",e.target.value)} style={inputStyle}/></Field>
+      <Field label="Departure Date"><input type="date" value={form.departureDate||form.arrivalDate} onChange={e=>update("departureDate",e.target.value)} style={inputStyle}/></Field>
+      <Field label="Departure Time (ETD)"><input type="time" value={form.departureTime} onChange={e=>update("departureTime",e.target.value)} style={inputStyle}/></Field>
+    </div>
+    <Field label="Service Type"><select value={form.serviceType} onChange={e=>update("serviceType",e.target.value)} style={inputStyle}>{SERVICE_TYPES.map(s=><option key={s.id} value={s.id}>{s.label} ({s.labelEs})</option>)}</select></Field>
+    <Field label="Notes"><textarea value={form.notes||""} onChange={e=>update("notes",e.target.value)} rows={2} placeholder="Additional details..." style={{...inputStyle,resize:"vertical"}}/></Field>
+    <div style={{display:"flex",justifyContent:"space-between",marginTop:20}}>
+      <div>{onDelete && <button onClick={onDelete} style={{...btnSecondary,color:"#EF4444",borderColor:"rgba(239,68,68,0.3)"}}>Delete</button>}</div>
+      <div style={{display:"flex",gap:10}}><button onClick={onCancel} style={btnSecondary}>Cancel</button><button onClick={handleSave} style={btnPrimary}>{initial?"Save Changes":"Add Flight"}</button></div>
+    </div>
+  </>;
 }
 
-// ===== DATA STATE =====
-var allDaily = [];
-var monthKeys = [];
-var monthMap = {};
-var monthlyData = [];
+function ClientManager({clients,setClients}) {
+  const [editId,setEditId]=useState(null);
+  const [newClient,setNewClient]=useState({name:"",short:"",color:"#0EA5E9"});
+  const COLORS=["#0EA5E9","#F97316","#8B5CF6","#10B981","#EF4444","#F59E0B","#EC4899","#14B8A6","#6366F1","#84CC16"];
+  const addClient=()=>{if(!newClient.name.trim()||!newClient.short.trim())return;setClients(p=>[...p,{...newClient,id:"c-"+Date.now()}]);setNewClient({name:"",short:"",color:"#0EA5E9"});};
+  const updateClient=(id,u)=>setClients(p=>p.map(c=>c.id===id?{...c,...u}:c));
+  const removeClient=(id)=>{if(clients.length<=1)return;setClients(p=>p.filter(c=>c.id!==id));};
+  return <div>
+    <div style={{marginBottom:20}}>{clients.map(c=><div key={c.id} style={{display:"flex",alignItems:"center",gap:12,padding:"10px 12px",borderRadius:10,marginBottom:6,background:"rgba(255,255,255,0.03)",border:"1px solid rgba(255,255,255,0.05)"}}>
+      <div style={{width:12,height:12,borderRadius:"50%",background:c.color,flexShrink:0}}/>
+      {editId===c.id?<>
+        <input value={c.name} onChange={e=>updateClient(c.id,{name:e.target.value})} style={{...inputStyle,flex:1,padding:"6px 10px"}}/>
+        <input value={c.short} onChange={e=>updateClient(c.id,{short:e.target.value.toUpperCase()})} style={{...inputStyle,width:60,padding:"6px 10px"}} maxLength={4}/>
+        <div style={{display:"flex",gap:3}}>{COLORS.map(col=><div key={col} onClick={()=>updateClient(c.id,{color:col})} style={{width:18,height:18,borderRadius:"50%",background:col,cursor:"pointer",border:c.color===col?"2px solid #fff":"2px solid transparent"}}/>)}</div>
+        <button onClick={()=>setEditId(null)} style={{background:"none",border:"none",color:"#10B981",cursor:"pointer"}}><Icon name="check" size={16}/></button>
+      </>:<>
+        <span style={{flex:1,fontSize:14,fontWeight:500,color:"#f0f4f8"}}>{c.name}</span>
+        <span style={{fontSize:12,fontWeight:700,fontFamily:"'JetBrains Mono', monospace",color:c.color}}>{c.short}</span>
+        <button onClick={()=>setEditId(c.id)} style={{background:"none",border:"none",color:"#8892a4",cursor:"pointer"}}><Icon name="edit" size={14}/></button>
+        <button onClick={()=>removeClient(c.id)} style={{background:"none",border:"none",color:"#8892a4",cursor:"pointer",opacity:0.5}}><Icon name="trash" size={14}/></button>
+      </>}
+    </div>)}</div>
+    <div style={{display:"flex",gap:10,alignItems:"end"}}>
+      <Field label="Name"><input value={newClient.name} onChange={e=>setNewClient(p=>({...p,name:e.target.value}))} placeholder="Aerolínea XYZ" style={{...inputStyle,padding:"8px 12px"}}/></Field>
+      <Field label="Code"><input value={newClient.short} onChange={e=>setNewClient(p=>({...p,short:e.target.value.toUpperCase()}))} placeholder="XYZ" maxLength={4} style={{...inputStyle,width:70,padding:"8px 12px"}}/></Field>
+      <div style={{display:"flex",gap:3,paddingBottom:16}}>{COLORS.slice(0,5).map(col=><div key={col} onClick={()=>setNewClient(p=>({...p,color:col}))} style={{width:22,height:22,borderRadius:"50%",background:col,cursor:"pointer",border:newClient.color===col?"2px solid #fff":"2px solid transparent"}}/>)}</div>
+      <button onClick={addClient} style={{...btnPrimary,padding:"8px 16px",marginBottom:16,whiteSpace:"nowrap"}}>+ Add</button>
+    </div>
+  </div>;
+}
 
-// ===== LOAD DATA VIA JSONP (works from file:// and any origin) =====
-function loadData() {
-  var btn = document.getElementById('refreshBtn');
-  var mi = document.getElementById('modeInfo');
-  var loadingEl = document.getElementById('loadingMsg');
-  var mainEl = document.getElementById('mainContent');
+function SheetsConfigPanel({config,clients,onSave,onSync,onCancel}) {
+  const [sheetId,setSheetId]=useState(config?.sheetId||"");
+  const [tabs,setTabs]=useState(config?.tabs||clients.map((c,i)=>({gid:"",clientId:c.id,name:c.name})));
+  const extractSheetId=(input)=>{const m=input.match(/\/d\/([a-zA-Z0-9_-]+)/);return m?m[1]:input.trim();};
+  const updateTab=(idx,field,value)=>setTabs(p=>p.map((t,i)=>i===idx?{...t,[field]:value}:t));
+  const handleSave=()=>{const cfg={sheetId:extractSheetId(sheetId),tabs:tabs.filter(t=>t.gid!=="")};onSave(cfg);};
+  const handleSync=()=>{const cfg={sheetId:extractSheetId(sheetId),tabs:tabs.filter(t=>t.gid!=="")};onSync(cfg);};
+  const infoStyle={fontSize:12,color:"#8892a4",lineHeight:1.6,marginBottom:16};
+  const codeStyle={background:"rgba(255,255,255,0.06)",padding:"2px 6px",borderRadius:4,fontFamily:"'JetBrains Mono', monospace",fontSize:11,color:"#0EA5E9"};
+  return <div>
+    <div style={infoStyle}><strong style={{color:"#f0f4f8"}}>Steps to connect:</strong><br/>
+    1. Upload the Excel template to Google Drive → Abrir como Google Sheets<br/>
+    2. In the Sheet: <span style={codeStyle}>Archivo → Compartir → Publicar en la web</span><br/>
+    3. Select <span style={codeStyle}>Documento completo</span> → formato <span style={codeStyle}>Página web</span> → Publicar<br/>
+    4. Copy the Google Sheet URL and paste it below<br/>
+    5. For each client, enter the <span style={codeStyle}>gid</span> of its tab</div>
+    <Field label="Google Sheet URL or ID"><input value={sheetId} onChange={e=>setSheetId(e.target.value)} placeholder="https://docs.google.com/spreadsheets/d/1abc123.../edit" style={inputStyle}/></Field>
+    <div style={{fontSize:12,fontWeight:600,color:"#8892a4",marginBottom:10,textTransform:"uppercase",letterSpacing:"0.05em"}}>Tabs per Client — GID of each tab</div>
+    <div style={infoStyle}>El <span style={codeStyle}>gid</span> appears in the URL: <span style={codeStyle}>...#gid=<strong>123456789</strong></span></div>
+    {tabs.map((tab,idx)=>{const client=clients.find(c=>c.id===tab.clientId);return <div key={idx} style={{display:"flex",alignItems:"center",gap:10,marginBottom:8}}>
+      <div style={{width:10,height:10,borderRadius:"50%",background:client?.color||"#666",flexShrink:0}}/>
+      <span style={{fontSize:13,fontWeight:500,minWidth:160,color:"#f0f4f8"}}>{client?.name||tab.name}</span>
+      <input value={tab.gid} onChange={e=>updateTab(idx,"gid",e.target.value)} placeholder="gid (ej: 0, 123456789)" style={{...inputStyle,flex:1,padding:"8px 12px",fontSize:13}}/>
+    </div>;})}
+    <div style={{display:"flex",justifyContent:"space-between",marginTop:24}}>
+      <button onClick={onCancel} style={btnSecondary}>Cancel</button>
+      <div style={{display:"flex",gap:10}}><button onClick={handleSave} style={btnSecondary}>Save Config</button><button onClick={handleSync} style={btnPrimary}>Save & Sync</button></div>
+    </div>
+  </div>;
+}
 
-  btn.disabled = true;
-  btn.textContent = 'Loading...';
-  mi.textContent = 'Fetching data from Google Sheets...';
-  if (loadingEl) { mainEl.style.display = 'block'; loadingEl.style.display = 'block'; }
+function App() {
+  const [flights,setFlights]=useState([]);
+  const [clients,setClients]=useState(DEFAULT_CLIENTS);
+  const [loaded,setLoaded]=useState(false);
+  const [view,setView]=useState("week");
+  const [selectedDate,setSelectedDate]=useState(todayStr());
+  const [clientFilter,setClientFilter]=useState("all");
+  const [showAddModal,setShowAddModal]=useState(false);
+  const [showClientModal,setShowClientModal]=useState(false);
+  const [editingFlight,setEditingFlight]=useState(null);
+  const [showTable,setShowTable]=useState(false);
+  const [showSheetsModal,setShowSheetsModal]=useState(false);
+  const [sheetsConfig,setSheetsConfig]=useState(HARDCODED_SHEETS_CONFIG);
+  const [syncing,setSyncing]=useState(false);
+  const [lastSync,setLastSync]=useState(null);
+  const [syncError,setSyncError]=useState(null);
 
-  var cbName = '_gviz_' + Date.now();
-  var script = document.createElement('script');
-
-  window[cbName] = function(response) {
-    delete window[cbName];
-    try { document.head.removeChild(script); } catch(e) {}
-    btn.disabled = false;
-    btn.textContent = '\u21BB Refresh Data';
-
-    if (!response || !response.table || !response.table.rows) {
-      var errMsg = 'Could not load data.';
-      if (response && response.errors && response.errors[0]) errMsg = response.errors[0].detailed_message || response.errors[0].message;
-      if (loadingEl) {
-        loadingEl.innerHTML = '<div class="err"><strong>Error loading data</strong><br>' + errMsg +
-          '<br><br><button onclick="loadData()" style="padding:8px 16px;border:1px solid #dc2626;border-radius:8px;background:#fff;color:#dc2626;cursor:pointer;font-weight:600">Retry</button></div>';
-      }
-      mi.textContent = 'Error loading data';
-      return;
-    }
-
+  const syncFromSheets = useCallback(async (config) => {
+    if(!config?.sheetId||!config?.tabs?.length)return;
+    setSyncing(true); setSyncError(null);
     try {
-      allDaily = pivotGviz(response.table);
-      if (allDaily.length === 0) throw new Error('No daily records found');
-
-      monthKeys = [];
-      var seen = {};
-      for (var i = 0; i < allDaily.length; i++) {
-        if (!seen[allDaily[i].m]) { seen[allDaily[i].m] = true; monthKeys.push(allDaily[i].m); }
+      const allFlights=[];
+      for(const tab of config.tabs){
+        if(!tab.gid&&tab.gid!==0)continue;
+        const url=buildSheetCSVUrl(config.sheetId,tab.gid);
+        const resp=await fetch(url);
+        if(!resp.ok)throw new Error(`Error tab ${tab.name}: ${resp.status}`);
+        const text=await resp.text();
+        const rows=parseCSV(text);
+        allFlights.push(...rows.filter(r=>r.status!=="cancelled").map(r=>sheetRowToFlight(r,tab.clientId)));
       }
-      monthMap = {};
-      for (var j = 0; j < monthKeys.length; j++) {
-        monthMap[monthKeys[j]] = [];
-        for (var k = 0; k < allDaily.length; k++) {
-          if (allDaily[k].m === monthKeys[j]) monthMap[monthKeys[j]].push(allDaily[k]);
-        }
+      setFlights(allFlights);
+      setLastSync(new Date().toLocaleTimeString("en-US",{timeZone:"America/New_York",hour:"2-digit",minute:"2-digit"}));
+    }catch(err){setSyncError(err.message);console.error(err);}
+    finally{setSyncing(false);}
+  },[]);
+
+  useEffect(()=>{
+    const c=loadData(CLIENTS_KEY,DEFAULT_CLIENTS);
+    setClients(c);
+    setLoaded(true);
+    setTimeout(()=>syncFromSheets(HARDCODED_SHEETS_CONFIG),300);
+
+    // Auto-refresh data from Google Sheets every 5 minutes
+    const dataInterval = setInterval(()=>{
+      console.log('[Auto-sync] Refreshing data from Sheets...');
+      syncFromSheets(HARDCODED_SHEETS_CONFIG);
+    }, 5 * 60 * 1000);
+
+    // Full page reload every 60 minutes (picks up code changes from GitHub)
+    const reloadInterval = setInterval(()=>{
+      console.log('[Auto-reload] Reloading page...');
+      window.location.reload();
+    }, 60 * 60 * 1000);
+
+    return ()=>{ clearInterval(dataInterval); clearInterval(reloadInterval); };
+  },[syncFromSheets]);
+
+  useEffect(()=>{if(loaded)saveData(CLIENTS_KEY,clients);},[clients,loaded]);
+
+  const resetDemo=()=>{syncFromSheets(HARDCODED_SHEETS_CONFIG);setView("week");setSelectedDate(todayStr());setClientFilter("all");};
+
+  const dateRange=useMemo(()=>{
+    if(view==="day")return{start:selectedDate,end:selectedDate};
+    if(view==="week")return getWeekRange(selectedDate);
+    return getMonthRange(selectedDate);
+  },[view,selectedDate]);
+  const datesInRange=useMemo(()=>getDatesInRange(dateRange.start,dateRange.end),[dateRange]);
+  const filteredFlights=useMemo(()=>flights.filter(f=>{
+    const inRange=f.arrivalDate>=dateRange.start&&f.arrivalDate<=dateRange.end;
+    const inClient=clientFilter==="all"||f.clientId===clientFilter;
+    return inRange&&inClient;
+  }),[flights,dateRange,clientFilter]);
+
+  const navigate=(dir)=>{const d=new Date(selectedDate+"T12:00:00");if(view==="day")d.setDate(d.getDate()+dir);else if(view==="week")d.setDate(d.getDate()+dir*7);else d.setMonth(d.getMonth()+dir);setSelectedDate(d.toISOString().slice(0,10));};
+  const addFlight=(flight)=>{setFlights(p=>[...p,{...flight,id:"f-"+Date.now()+Math.random().toString(36).slice(2,6)}]);setShowAddModal(false);};
+  const updateFlight=(flight)=>{setFlights(p=>p.map(f=>f.id===flight.id?flight:f));setEditingFlight(null);};
+  const deleteFlight=(id)=>{setFlights(p=>p.filter(f=>f.id!==id));setEditingFlight(null);};
+  const getClient=(id)=>clients.find(c=>c.id===id)||{name:"?",color:"#666",short:"?"};
+
+  const stats=useMemo(()=>{
+    const today=todayStr();
+    const todayFlights=flights.filter(f=>f.arrivalDate===today);
+    const wr=getWeekRange(today);
+    const weekFlights=flights.filter(f=>f.arrivalDate>=wr.start&&f.arrivalDate<=wr.end);
+    const now=new Date();
+    const inHangar=todayFlights.filter(f=>{const a=new Date(f.arrivalDate+"T"+f.arrivalTime);const d=new Date((f.departureDate||f.arrivalDate)+"T"+f.departureTime);return now>=a&&now<=d;});
+    return{today:todayFlights.length,week:weekFlights.length,inHangar:inHangar.length};
+  },[flights]);
+
+  const headerLabel=useMemo(()=>{
+    if(view==="day")return fmtDay(selectedDate+"T12:00:00");
+    if(view==="week")return `${fmtDay(dateRange.start+"T12:00:00")} — ${fmtDay(dateRange.end+"T12:00:00")}`;
+    return new Date(selectedDate+"T12:00:00").toLocaleDateString("en-US",{timeZone:MIAMI_TZ,month:"long",year:"numeric"});
+  },[view,selectedDate,dateRange]);
+
+  if(!loaded)return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",background:"#0d1117",color:"#8892a4"}}>Loading...</div>;
+
+  return <div style={{minHeight:"100vh",background:"#0d1117",color:"#f0f4f8",fontFamily:"'DM Sans', sans-serif"}}>
+    {/* Header */}
+    <div style={{position:"sticky",top:0,zIndex:100,background:"linear-gradient(180deg, #131825 0%, #0d1117 100%)",borderBottom:"1px solid rgba(255,255,255,0.06)",padding:"16px 28px 16px 28px",backdropFilter:"blur(12px)"}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:14}}>
+          <img src="data:image/png;base64,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" style={{width:44,height:44,borderRadius:10,objectFit:"cover"}} alt="Flight Tech"/>
+          <div><h1 style={{margin:0,fontSize:20,fontWeight:700,letterSpacing:"-0.02em"}}>Flight Tech — Planning Board</h1><p style={{margin:0,fontSize:12,color:"#8892a4"}}>MRO Schedule Dashboard · Miami Time (EST)</p></div>
+        </div>
+        <div style={{display:"flex",gap:10,alignItems:"center",flexWrap:"wrap"}}>
+          {sheetsConfig?.sheetId?<button onClick={()=>syncFromSheets(sheetsConfig)} disabled={syncing} style={{...btnSecondary,display:"flex",alignItems:"center",gap:6,padding:"8px 16px",fontSize:12,color:syncing?"#8892a4":"#10B981",borderColor:syncing?"rgba(255,255,255,0.06)":"rgba(16,185,129,0.3)"}}>{syncing?"⟳ Syncing...":"⟳ Sync Sheets"}{lastSync&&!syncing&&<span style={{fontSize:10,color:"#8892a4",marginLeft:4}}>(last: {lastSync} · auto every 5min)</span>}</button>:null}
+          <button onClick={()=>setShowSheetsModal(true)} style={{...btnSecondary,display:"flex",alignItems:"center",gap:6,padding:"8px 16px",fontSize:12,color:"#10B981",borderColor:"rgba(16,185,129,0.3)"}}>📊 Sheets ✓</button>
+          <button onClick={resetDemo} style={{...btnSecondary,display:"flex",alignItems:"center",gap:6,padding:"8px 16px",fontSize:12,color:"#8892a4"}}>↻ Reload</button>
+          <button onClick={()=>setShowClientModal(true)} style={{...btnSecondary,display:"flex",alignItems:"center",gap:6,padding:"8px 16px"}}><Icon name="settings" size={15}/> Clients</button>
+          <button onClick={()=>{setEditingFlight(null);setShowAddModal(true);}} style={{...btnPrimary,display:"flex",alignItems:"center",gap:6,padding:"8px 16px"}}><Icon name="plus" size={15}/> New Flight</button>
+        </div>
+      </div>
+      <div style={{display:"flex",gap:14,marginTop:20,flexWrap:"wrap"}}>
+        {[{label:"Today",value:stats.today,icon:"plane",color:"#0EA5E9"},{label:"This Week",value:stats.week,icon:"calendar",color:"#8B5CF6"},{label:"On Bay Now",value:stats.inHangar,icon:"clock",color:"#10B981"}].map(s=>
+          <div key={s.label} className="stat-card" style={{background:"rgba(255,255,255,0.05)",border:"1px solid rgba(255,255,255,0.08)",borderRadius:14,padding:"14px 20px",minWidth:140,transition:"all 0.2s",backdropFilter:"blur(8px)"}}>
+            <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:6}}><div style={{color:s.color}}><Icon name={s.icon} size={14}/></div><span style={{fontSize:11,color:"#8892a4",textTransform:"uppercase",letterSpacing:"0.06em",fontWeight:600}}>{s.label}</span></div>
+            <span style={{fontSize:28,fontWeight:700,fontFamily:"'JetBrains Mono', monospace",color:s.color}}>{s.value}</span>
+          </div>
+        )}
+      </div>
+    </div>
+
+    {/* Toolbar */}
+    <div style={{padding:"16px 28px",display:"flex",alignItems:"center",justifyContent:"space-between",flexWrap:"wrap",gap:12,borderBottom:"1px solid rgba(255,255,255,0.06)",background:"rgba(255,255,255,0.01)"}}>
+      <div style={{display:"flex",alignItems:"center",gap:8}}>
+        <button onClick={()=>navigate(-1)} style={{...btnSecondary,padding:"7px 10px"}}><Icon name="chevLeft" size={16}/></button>
+        <button onClick={()=>setSelectedDate(todayStr())} style={{...btnSecondary,padding:"7px 14px",fontSize:13}}>Today</button>
+        <button onClick={()=>navigate(1)} style={{...btnSecondary,padding:"7px 10px"}}><Icon name="chevRight" size={16}/></button>
+        <span style={{fontSize:15,fontWeight:600,marginLeft:8,textTransform:"capitalize"}}>{headerLabel}</span>
+      </div>
+      <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{display:"flex",background:"rgba(255,255,255,0.04)",borderRadius:10,border:"1px solid rgba(255,255,255,0.06)",overflow:"hidden"}}>
+          {["day","week","month"].map(v=><button key={v} className="view-btn" onClick={()=>setView(v)} style={{padding:"7px 16px",border:"none",fontSize:13,fontWeight:600,cursor:"pointer",background:view===v?"rgba(14,165,233,0.2)":"transparent",color:view===v?"#0EA5E9":"#8892a4",fontFamily:"'DM Sans', sans-serif"}}>{v==="day"?"Day":v==="week"?"Week":"Month"}</button>)}
+        </div>
+        <button onClick={()=>setShowTable(!showTable)} style={{...btnSecondary,padding:"7px 10px"}}><Icon name={showTable?"grid":"list"} size={16}/></button>
+        <select value={clientFilter} onChange={e=>setClientFilter(e.target.value)} style={{...inputStyle,width:"auto",minWidth:150,padding:"7px 32px 7px 12px",fontSize:13}}>
+          <option value="all">All Clients</option>
+          {clients.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}
+        </select>
+        <input type="date" value={selectedDate} onChange={e=>setSelectedDate(e.target.value)} style={{...inputStyle,width:"auto",padding:"7px 12px",fontSize:13}}/>
+      </div>
+    </div>
+
+    {/* Content */}
+    <div style={{padding:"20px 28px"}}>
+      {filteredFlights.length===0?
+        <div style={{textAlign:"center",padding:"60px 20px",color:"#8892a4"}}><Icon name="plane" size={48}/><p style={{fontSize:16,marginTop:16}}>No flights scheduled for this period</p><button onClick={()=>setShowAddModal(true)} style={{...btnPrimary,marginTop:12}}>Add Flight</button></div>
+      :showTable?
+        <div style={{overflowX:"auto"}}>{datesInRange.map(date=>{
+          const dayFlights=filteredFlights.filter(f=>f.arrivalDate===date).sort((a,b)=>a.arrivalTime.localeCompare(b.arrivalTime));
+          if(dayFlights.length===0)return null;
+          return <div key={date} style={{marginBottom:24}}>
+            {view!=="day"&&<h3 style={{fontSize:13,fontWeight:600,color:"#8892a4",marginBottom:10,textTransform:"capitalize"}}>{fmtDay(date+"T12:00:00")}</h3>}
+            <div style={{borderRadius:14,border:"1px solid rgba(255,255,255,0.06)",overflow:"hidden"}}>
+              <div style={{display:"grid",gridTemplateColumns:"60px 1fr 110px 110px 130px 100px 60px",padding:"10px 16px",background:"rgba(255,255,255,0.03)",fontSize:11,fontWeight:600,color:"#8892a4",textTransform:"uppercase",letterSpacing:"0.05em",gap:12}}>
+                <span>Client</span><span>Tail</span><span>ETA</span><span>ETD</span><span>Service</span><span>Status</span><span></span>
+              </div>
+              {dayFlights.map(f=>{const cl=getClient(f.clientId);const svc=SERVICE_TYPES.find(s=>s.id===f.serviceType);
+                return <div key={f.id} className="flight-row" style={{display:"grid",gridTemplateColumns:"60px 1fr 110px 110px 130px 100px 60px",padding:"12px 16px",borderTop:"1px solid rgba(255,255,255,0.04)",alignItems:"center",gap:12,cursor:"pointer"}} onClick={()=>{setEditingFlight(f);setShowAddModal(true);}}>
+                  <div style={{display:"flex",alignItems:"center",gap:8}}><div style={{width:8,height:8,borderRadius:"50%",background:cl.color,flexShrink:0}}/><span style={{fontSize:12,fontWeight:600,color:cl.color}}>{cl.short}</span></div>
+                  <span style={{fontSize:14,fontWeight:600,fontFamily:"'JetBrains Mono', monospace"}}>{f.tailNumber}</span>
+                  <span style={{fontSize:14,fontFamily:"'JetBrains Mono', monospace",color:"#10B981"}}>{f.arrivalTime}</span>
+                  <span style={{fontSize:14,fontFamily:"'JetBrains Mono', monospace",color:"#F97316"}}>{f.departureTime}</span>
+                  <span style={{fontSize:12,color:"#c1c9d6"}}>{svc?`${svc.label}`:f.serviceType}</span>
+                  <StatusBadge flight={f}/>
+                  <button onClick={e=>{e.stopPropagation();deleteFlight(f.id);}} style={{background:"none",border:"none",color:"#8892a4",cursor:"pointer",padding:4,opacity:0.5}}><Icon name="trash" size={14}/></button>
+                </div>;
+              })}
+            </div>
+          </div>;
+        })}</div>
+      :
+        <div style={{overflowX:"auto"}}>{datesInRange.map(date=>{
+          const dayFlights=filteredFlights.filter(f=>f.arrivalDate===date).sort((a,b)=>a.arrivalTime.localeCompare(b.arrivalTime));
+          if(dayFlights.length===0&&view==="day")return <div key={date} style={{textAlign:"center",padding:40,color:"#8892a4"}}>No flights scheduled</div>;
+          if(dayFlights.length===0)return null;
+          return <div key={date} style={{marginBottom:28}}>
+            {view!=="day"&&<h3 style={{fontSize:13,fontWeight:600,color:"#8892a4",marginBottom:10,textTransform:"capitalize"}}>{fmtDay(date+"T12:00:00")} — {dayFlights.length} flight{dayFlights.length>1?"s":""}</h3>}
+            <div style={{position:"relative",background:"rgba(255,255,255,0.02)",borderRadius:14,border:"1px solid rgba(255,255,255,0.08)",padding:"12px 16px",minHeight:60,backgroundImage:"repeating-linear-gradient(90deg, transparent, transparent calc(100%/24 - 1px), rgba(255,255,255,0.03) calc(100%/24 - 1px), rgba(255,255,255,0.03) calc(100%/24))"}}>
+              <div style={{display:"flex",borderBottom:"1px solid rgba(255,255,255,0.06)",background:"rgba(255,255,255,0.01)",paddingBottom:6,marginBottom:8}}>
+                {Array.from({length:24},(_,i)=><div key={i} style={{flex:1,fontSize:10,color:i%6===0?"#8892a4":"#444d5e",textAlign:"center",fontFamily:"'JetBrains Mono', monospace",fontWeight:i%6===0?600:400,borderLeft:"1px solid "+(i%6===0?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.03)"),paddingTop:4}}>{String(i).padStart(2,"0")}:00</div>)}
+              </div>
+              {dayFlights.map(f=>{const cl=getClient(f.clientId);const arrMin=timeToMinutes(f.arrivalTime);const depMin=timeToMinutes(f.departureTime);const totalMin=depMin>arrMin?depMin-arrMin:(1440-arrMin+depMin);const leftPct=(arrMin/1440)*100;const widthPct=Math.max((totalMin/1440)*100,2);
+                return <div key={f.id} style={{position:"relative",height:36,marginBottom:4,cursor:"pointer"}} onClick={()=>{setEditingFlight(f);setShowAddModal(true);}}>
+                  <div style={{position:"absolute",left:leftPct+"%",width:widthPct+"%",height:30,borderRadius:8,background:cl.color+"44",border:`2px solid ${cl.color}aa`,boxShadow:`0 0 12px ${cl.color}33`,display:"flex",alignItems:"center",padding:"0 10px",gap:8,overflow:"hidden",transition:"all 0.2s"}}>
+                    <span style={{fontSize:11,fontWeight:700,color:cl.color,whiteSpace:"nowrap"}}>{cl.short}</span>
+                    <span style={{fontSize:12,fontWeight:700,fontFamily:"'JetBrains Mono', monospace",whiteSpace:"nowrap",color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,0.4)"}}>{f.tailNumber}</span>
+                    <span style={{fontSize:10,color:"#c1c9d6",whiteSpace:"nowrap",marginLeft:"auto",fontWeight:500}}>{f.arrivalTime}→{f.departureTime}</span>
+                  </div>
+                </div>;
+              })}
+            </div>
+          </div>;
+        })}</div>
       }
+    </div>
 
-      monthlyData = [];
-      for (var mi2 = 0; mi2 < monthKeys.length; mi2++) {
-        var days = monthMap[monthKeys[mi2]];
-        var agg = { label: monthKeys[mi2].replace(/^\d+_/, '').replace(' 20', "'"), month: monthKeys[mi2], days: days.length };
-        for (var fi = 0; fi < ALL_FIELDS.length; fi++) {
-          var sum = 0;
-          for (var di = 0; di < days.length; di++) sum += days[di][ALL_FIELDS[fi]];
-          agg[ALL_FIELDS[fi]] = sum;
-        }
-        monthlyData.push(agg);
-      }
+    {syncError&&<div style={{margin:"0 28px",padding:"10px 16px",background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.3)",borderRadius:10,display:"flex",alignItems:"center",justifyContent:"space-between"}}><span style={{fontSize:13,color:"#EF4444"}}>Error: {syncError}</span><button onClick={()=>setSyncError(null)} style={{background:"none",border:"none",color:"#EF4444",cursor:"pointer"}}><Icon name="x" size={14}/></button></div>}
 
-      var mfEl = document.getElementById('mf');
-      while (mfEl.options.length > 1) mfEl.remove(1);
-      for (var oi = 0; oi < monthKeys.length; oi++) {
-        var o = document.createElement('option');
-        o.value = oi;
-        o.text = monthKeys[oi].replace(/^\d+_/, '');
-        mfEl.appendChild(o);
-      }
-
-      document.getElementById('dateRange').textContent = allDaily[0].d + ' to ' + allDaily[allDaily.length - 1].d + ' (' + allDaily.length + ' days)';
-      if (loadingEl) mainEl.style.display = 'none';
-      document.getElementById('dashContent').style.display = 'block';
-      document.getElementById('modeInfo').textContent = 'Showing monthly totals | Last updated: ' + new Date().toLocaleTimeString();
-      renderAll();
-    } catch (err) {
-      if (loadingEl) {
-        loadingEl.innerHTML = '<div class="err"><strong>Error processing data</strong><br>' + err.message +
-          '<br><br><button onclick="loadData()" style="padding:8px 16px;border:1px solid #dc2626;border-radius:8px;background:#fff;color:#dc2626;cursor:pointer;font-weight:600">Retry</button></div>';
-      }
-    }
-  };
-
-  script.onerror = function() {
-    delete window[cbName];
-    btn.disabled = false;
-    btn.textContent = '\u21BB Refresh Data';
-    if (loadingEl) {
-      loadingEl.innerHTML = '<div class="err"><strong>Could not connect to Google Sheets</strong><br>Check your internet connection and make sure the spreadsheet is shared as "Anyone with the link".' +
-        '<br><br><button onclick="loadData()" style="padding:8px 16px;border:1px solid #dc2626;border-radius:8px;background:#fff;color:#dc2626;cursor:pointer;font-weight:600">Retry</button></div>';
-    }
-  };
-
-  script.src = 'https://docs.google.com/spreadsheets/d/' + SHEET_ID + '/gviz/tq?tqx=responseHandler:' + cbName + '&gid=' + GID;
-  document.head.appendChild(script);
+    <Modal open={showAddModal} onClose={()=>{setShowAddModal(false);setEditingFlight(null);}} title={editingFlight?"Edit Flight":"New Flight"}>
+      <FlightForm clients={clients} initial={editingFlight} onSave={editingFlight?updateFlight:addFlight} onDelete={editingFlight?()=>deleteFlight(editingFlight.id):null} onCancel={()=>{setShowAddModal(false);setEditingFlight(null);}} selectedDate={selectedDate}/>
+    </Modal>
+    <Modal open={showClientModal} onClose={()=>setShowClientModal(false)} title="Client Management" wide><ClientManager clients={clients} setClients={setClients}/></Modal>
+    <Modal open={showSheetsModal} onClose={()=>setShowSheetsModal(false)} title="📊 Connect Google Sheets" wide>
+      <SheetsConfigPanel config={sheetsConfig} clients={clients} onSave={cfg=>{setSheetsConfig(cfg);setShowSheetsModal(false);}} onSync={cfg=>{setSheetsConfig(cfg);syncFromSheets(cfg);setShowSheetsModal(false);}} onCancel={()=>setShowSheetsModal(false)}/>
+    </Modal>
+  </div>;
 }
 
-// ===== TAB SWITCHING =====
-var tabBtns = document.querySelectorAll('.tab');
-for (var ti = 0; ti < tabBtns.length; ti++) {
-  (function(b) {
-    b.addEventListener('click', function() {
-      var all = document.querySelectorAll('.tab');
-      for (var j = 0; j < all.length; j++) all[j].classList.remove('on');
-      var panes = document.querySelectorAll('.tc');
-      for (var j = 0; j < panes.length; j++) panes[j].classList.remove('on');
-      b.classList.add('on');
-      document.getElementById('t-' + b.getAttribute('data-t')).classList.add('on');
-    });
-  })(tabBtns[ti]);
-}
-
-// ===== HELPERS =====
-var C = { bl: '#3b82f6', bll: 'rgba(59,130,246,.15)', gn: '#10b981', gnl: 'rgba(16,185,129,.15)', or: '#f59e0b', orl: 'rgba(245,158,11,.15)', rd: '#ef4444', rdl: 'rgba(239,68,68,.15)', pu: '#8b5cf6', pk: '#ec4899', gy: '#6b7280', tl: '#14b8a6', id: '#6366f1' };
-function pct(a, b) { return b ? Math.round(a / b * 100) : 0; }
-function avg(v, d) { return d ? (v / d).toFixed(1) : 0; }
-function trend(c, p) { if (!p) return ''; var d = Math.round((c - p) / p * 100); return d > 0 ? '<span class="tr up">&#9650;' + d + '%</span>' : d < 0 ? '<span class="tr dn">&#9660;' + Math.abs(d) + '%</span>' : '<span class="tr">&#9654;0%</span>'; }
-Chart.defaults.font.family = "'Segoe UI',system-ui,sans-serif";
-Chart.defaults.font.size = 11;
-Chart.defaults.plugins.legend.labels.usePointStyle = true;
-Chart.defaults.plugins.legend.labels.padding = 14;
-
-var charts = {};
-function mc(id, cfg) { if (charts[id]) charts[id].destroy(); charts[id] = new Chart(document.getElementById(id), cfg); return charts[id]; }
-
-// ===== RENDER KPIs =====
-function renderKPIs(data) {
-  var isAllMonths = data.length > 1 && document.getElementById('mf').value === 'all';
-
-  if (isAllMonths) {
-    // Calculate totals across all months
-    var tot = { tt:0, te:0, hhe:0, hhp:0, hhx:0, hhc:0, hhu:0, def:0, days:0 };
-    data.forEach(function(d) {
-      tot.tt += d.tt; tot.te += d.te; tot.hhe += d.hhe; tot.hhp += d.hhp;
-      tot.hhx += d.hhx; tot.hhc += d.hhc; tot.hhu += d.hhu; tot.def += d.def; tot.days += d.days;
-    });
-    var n = data.length;
-    var er = pct(tot.te, tot.tt);
-    var avgTT = Math.round(tot.tt / n);
-    var avgTE = Math.round(tot.te / n);
-    var avgHHE = Math.round(tot.hhe / n);
-    var avgHHP = Math.round(tot.hhp / n);
-    var avgHHX = Math.round(tot.hhx / n);
-    var avgHHC = Math.round(tot.hhc / n);
-    var avgHHU = Math.round(tot.hhu / n);
-    var avgDEF = +(tot.def / n).toFixed(1);
-
-    document.getElementById('kR').innerHTML =
-      '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + tot.tt.toLocaleString() + '</div><div class="kpi-s">' + n + ' months (' + tot.days + ' days) · Avg/mo: ' + avgTT.toLocaleString() + '</div></div>' +
-      '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + tot.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% · Avg/mo: ' + avgTE.toLocaleString() + '</div></div>' +
-      '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + tot.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(tot.hhe, tot.days) + ' · Avg/mo: ' + avgHHE.toLocaleString() + '</div></div>' +
-      '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + tot.hhp.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(tot.hhp, tot.days) + ' · Avg/mo: ' + avgHHP.toLocaleString() + '</div></div>' +
-      '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + tot.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(tot.hhx, tot.hhe) + '% of total · Avg/mo: ' + avgHHX.toLocaleString() + '</div></div>' +
-      '<div class="kpi r"><div class="kpi-l">HH Canceled</div><div class="kpi-v">' + tot.hhc.toLocaleString() + '</div><div class="kpi-s">Avg/mo: ' + avgHHC.toLocaleString() + '</div></div>' +
-      '<div class="kpi o"><div class="kpi-l">HH Unassigned</div><div class="kpi-v">' + tot.hhu.toLocaleString() + '</div><div class="kpi-s">Avg/mo: ' + avgHHU.toLocaleString() + '</div></div>' +
-      '<div class="kpi r"><div class="kpi-l">Deferrals Closed / Partial</div><div class="kpi-v">' + tot.def + '</div><div class="kpi-s">Avg/mo: ' + avgDEF + '</div></div>';
-  } else {
-    // Single month or daily view — show last entry with trend vs previous
-    var d = data[data.length - 1], p = data.length > 1 ? data[data.length - 2] : null;
-    var er = pct(d.te, d.tt);
-    document.getElementById('kR').innerHTML =
-      '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + d.tt.toLocaleString() + '</div><div class="kpi-s">' + d.label + ' (' + d.days + ' days) ' + trend(d.tt, p ? p.tt : 0) + '</div></div>' +
-      '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + d.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% ' + trend(d.te, p ? p.te : 0) + '</div></div>' +
-      '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + d.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhe, d.days) + ' ' + trend(d.hhe, p ? p.hhe : 0) + '</div></div>' +
-      '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + d.hhp.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhp, d.days) + ' ' + trend(d.hhp, p ? p.hhp : 0) + '</div></div>' +
-      '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + d.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(d.hhx, d.hhe) + '% of total ' + trend(d.hhx, p ? p.hhx : 0) + '</div></div>' +
-      '<div class="kpi r"><div class="kpi-l">HH Canceled</div><div class="kpi-v">' + d.hhc.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhc, p ? p.hhc : 0) + '</div></div>' +
-      '<div class="kpi o"><div class="kpi-l">HH Unassigned</div><div class="kpi-v">' + d.hhu.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhu, p ? p.hhu : 0) + '</div></div>' +
-      '<div class="kpi r"><div class="kpi-l">Deferrals Closed / Partial</div><div class="kpi-v">' + d.def + '</div><div class="kpi-s">' + trend(d.def, p ? p.def : 0) + '</div></div>';
-  }
-}
-
-// ===== RENDER CHARTS =====
-function renderCharts(data, labels) {
-  var pr = data.length > 40 ? 1 : 4;
-  mc('c1', { type: 'line', data: { labels: labels, datasets: [
-    { label: 'HH Executed', data: data.map(function(d) { return d.hhe; }), borderColor: C.bl, backgroundColor: C.bll, fill: true, tension: .3, pointRadius: pr },
-    { label: 'HH Programmed', data: data.map(function(d) { return d.hhp; }), borderColor: C.gn, backgroundColor: C.gnl, fill: true, tension: .3, pointRadius: pr },
-    { label: 'HH Extra', data: data.map(function(d) { return d.hhx; }), borderColor: C.or, backgroundColor: C.orl, fill: true, tension: .3, pointRadius: pr > 1 ? 3 : 1 },
-    { label: 'HH Canceled', data: data.map(function(d) { return d.hhc; }), borderColor: C.rd, backgroundColor: C.rdl, fill: true, tension: .3, pointRadius: pr > 1 ? 3 : 1 }
-  ] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Man-Hours' } } } } });
-
-  mc('c2', { type: 'bar', data: { labels: labels, datasets: [
-    { label: 'Total', data: data.map(function(d) { return d.tt; }), backgroundColor: C.bll, borderColor: C.bl, borderWidth: 1 },
-    { label: 'Executed', data: data.map(function(d) { return d.te; }), backgroundColor: C.gnl, borderColor: C.gn, borderWidth: 1 }
-  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
-
-  mc('c3', { type: 'line', data: { labels: labels, datasets: [
-    { label: 'Task Execution Rate (%)', data: data.map(function(d) { return pct(d.te, d.tt); }), borderColor: C.gn, backgroundColor: C.gnl, fill: true, tension: .3, pointRadius: pr > 1 ? 5 : 1 },
-    { label: 'HH Efficiency (%)', data: data.map(function(d) { return pct(d.hhe, d.hhp); }), borderColor: C.bl, backgroundColor: C.bll, fill: false, tension: .3, pointRadius: pr > 1 ? 5 : 1 }
-  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 200, title: { display: true, text: '%' } } } } });
-
-  mc('c4', { type: 'bar', data: { labels: labels, datasets: [
-    { label: 'HH Programmed', data: data.map(function(d) { return d.hhp; }), backgroundColor: C.bl, stack: 'a' },
-    { label: 'HH Extra', data: data.map(function(d) { return d.hhx; }), backgroundColor: C.or, stack: 'a' },
-    { label: 'HH Canceled', data: data.map(function(d) { return d.hhc; }), backgroundColor: C.rd, stack: 'b' },
-    { label: 'HH Unassigned', data: data.map(function(d) { return d.hhu; }), backgroundColor: C.gy, stack: 'b' }
-  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { stacked: true, beginAtZero: true } } } });
-
-  var tot = { hhp: 0, hhx: 0, hhc: 0, hhu: 0 };
-  data.forEach(function(d) { tot.hhp += d.hhp; tot.hhx += d.hhx; tot.hhc += d.hhc; tot.hhu += d.hhu; });
-  mc('c5', { type: 'doughnut', data: { labels: ['Programmed', 'Extra', 'Canceled', 'Unassigned'], datasets: [{ data: [tot.hhp, tot.hhx, tot.hhc, tot.hhu], backgroundColor: [C.bl, C.or, C.rd, C.gy] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
-
-  mc('c6', { type: 'bar', data: { labels: labels, datasets: [
-    { label: 'Avg HH Exec/day', data: data.map(function(d) { return data.length === 1 ? d.hhe : +(d.hhe / (d.days || 1)).toFixed(1); }), backgroundColor: C.bl },
-    { label: 'Avg HH Prog/day', data: data.map(function(d) { return data.length === 1 ? d.hhp : +(d.hhp / (d.days || 1)).toFixed(1); }), backgroundColor: C.gn }
-  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: data.length > 31 ? 'HH per day' : 'HH' } } } } });
-
-  mc('c7', { type: 'bar', data: { labels: labels, datasets: [
-    { label: 'Programmed', data: data.map(function(d) { return d.pt; }), backgroundColor: C.bl },
-    { label: 'Extra', data: data.map(function(d) { return d.et; }), backgroundColor: C.or },
-    { label: 'Unassigned LATAM', data: data.map(function(d) { return d.tul; }), backgroundColor: C.pu },
-    { label: 'Unassigned FTWC', data: data.map(function(d) { return d.tuf; }), backgroundColor: C.pk },
-    { label: 'Canceled', data: data.map(function(d) { return d.ct; }), backgroundColor: C.rd }
-  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } } } });
-
-  var tTot = { pt: 0, et: 0, tul: 0, tuf: 0, ct: 0 };
-  data.forEach(function(d) { tTot.pt += d.pt; tTot.et += d.et; tTot.tul += d.tul; tTot.tuf += d.tuf; tTot.ct += d.ct; });
-  mc('c8', { type: 'doughnut', data: { labels: ['Programmed', 'Extra', 'Unassigned LATAM', 'Unassigned FTWC', 'Canceled'], datasets: [{ data: [tTot.pt, tTot.et, tTot.tul, tTot.tuf, tTot.ct], backgroundColor: [C.bl, C.or, C.pu, C.pk, C.rd] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
-
-  mc('c9', { type: 'bar', data: { labels: labels, datasets: [
-    { label: 'Deferrals', data: data.map(function(d) { return d.def; }), backgroundColor: C.rd },
-    { label: 'Preventive', data: data.map(function(d) { return d.prev; }), backgroundColor: C.tl }
-  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
-
-  var rKeys = ['r_fhh', 'r_fin', 'r_tinc', 'r_tat', 'r_feq', 'r_inf', 'r_wea', 'r_eval', 'r_tav', 'r_noa', 'r_tni'];
-  var rLabels = ['Missing HH (Resource)', 'Financing (Parts/Tools)', 'Incompatible Task', 'TAT (Insufficient Slot)', 'Missing Ground Equip.', 'Infrastructure', 'Weather', 'Deferral Evaluation / TSM - Troubleshooting', 'Partially Completed (Preventive / IH)', 'Not Accepted', 'No Task Info'];
-  var rColors = [C.rd, C.or, C.pu, C.bl, C.tl, C.gy, C.id, C.pk, C.gn, '#d946ef', '#a855f7'];
-  var rTotals = rKeys.map(function(k) { return data.reduce(function(s, d) { return s + (d[k] || 0); }, 0); });
-  var filt = rLabels.map(function(l, i) { return { l: l, v: rTotals[i], c: rColors[i], k: rKeys[i] }; }).filter(function(r) { return r.v > 0; }).sort(function(a, b) { return b.v - a.v; });
-
-  mc('c10', { type: 'bar', data: { labels: filt.map(function(r) { return r.l; }), datasets: [{ label: 'Incidents', data: filt.map(function(r) { return r.v; }), backgroundColor: filt.map(function(r) { return r.c; }) }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { beginAtZero: true } }, plugins: { legend: { display: false } } } });
-
-  var topR = filt.slice(0, 5);
-  mc('c11', { type: 'line', data: { labels: labels, datasets: topR.map(function(r) { return { label: r.l, data: data.map(function(d) { return d[r.k] || 0; }), borderColor: r.c, backgroundColor: 'transparent', tension: .3, pointRadius: pr }; }) }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
-}
-
-// ===== RENDER TABLE =====
-function renderTable(data, isDaily) {
-  var t = document.getElementById('dT');
-  document.getElementById('tblTitle').textContent = isDaily ? 'Daily Detail' : 'Monthly Detail Summary';
-  var h = '<thead><tr><th>' + (isDaily ? 'Date' : 'Month') + '</th>' + (isDaily ? '' : '<th class="n">Days</th>') +
-    '<th class="n">Total Tasks</th><th class="n">Executed</th><th class="n">% Exec</th>' +
-    '<th class="n">Programmed</th><th class="n">Extra</th><th class="n">UA LAT</th><th class="n">UA FT</th><th class="n">Canceled</th>' +
-    '<th class="n">HH Exec</th><th class="n">HH Prog</th><th class="n">HH Extra</th>' +
-    '<th class="n">HH Cancel</th><th class="n">HH Unass</th><th class="n">Deferrals</th>' +
-    '</tr></thead><tbody>';
-  var sums = { tt: 0, te: 0, pt: 0, et: 0, tul: 0, tuf: 0, ct: 0, hhe: 0, hhp: 0, hhx: 0, hhc: 0, hhu: 0, def: 0, days: 0 };
-  data.forEach(function(d) {
-    var r = pct(d.te, d.tt), rc = r >= 85 ? 'h' : r >= 70 ? 'm' : 'l';
-    h += '<tr><td><strong>' + (isDaily ? d.d || d.label : d.label) + '</strong></td>' + (isDaily ? '' : '<td class="n">' + d.days + '</td>') +
-      '<td class="n">' + d.tt + '</td><td class="n">' + d.te + '</td><td class="n p ' + rc + '">' + r + '%</td>' +
-      '<td class="n">' + d.pt + '</td><td class="n">' + d.et + '</td><td class="n">' + d.tul + '</td><td class="n">' + d.tuf + '</td><td class="n">' + d.ct + '</td>' +
-      '<td class="n"><strong>' + d.hhe + '</strong></td><td class="n">' + d.hhp + '</td><td class="n">' + d.hhx + '</td>' +
-      '<td class="n">' + d.hhc + '</td><td class="n">' + d.hhu + '</td><td class="n">' + d.def + '</td></tr>';
-    for (var k in sums) { if (d[k] !== undefined) sums[k] += d[k]; }
-    if (!isDaily) sums.days += d.days; else sums.days++;
-  });
-  var sr = pct(sums.te, sums.tt), src = sr >= 85 ? 'h' : sr >= 70 ? 'm' : 'l';
-  h += '<tr style="font-weight:700;background:#f0f4f8"><td>TOTAL</td>' + (isDaily ? '' : '<td class="n">' + sums.days + '</td>') +
-    '<td class="n">' + sums.tt + '</td><td class="n">' + sums.te + '</td><td class="n p ' + src + '">' + sr + '%</td>' +
-    '<td class="n">' + sums.pt + '</td><td class="n">' + sums.et + '</td><td class="n">' + sums.tul + '</td><td class="n">' + sums.tuf + '</td><td class="n">' + sums.ct + '</td>' +
-    '<td class="n">' + sums.hhe + '</td><td class="n">' + sums.hhp + '</td><td class="n">' + sums.hhx + '</td>' +
-    '<td class="n">' + sums.hhc + '</td><td class="n">' + sums.hhu + '</td><td class="n">' + sums.def + '</td></tr></tbody>';
-  t.innerHTML = h;
-}
-
-// ===== MAIN RENDER =====
-function renderAll() {
-  var fv = document.getElementById('mf').value;
-  var mi = document.getElementById('modeInfo');
-  var ts = mi.textContent.indexOf('Last updated') >= 0 ? ' | ' + mi.textContent.split('|').pop().trim() : '';
-  if (fv === 'all') {
-    mi.textContent = 'Showing monthly totals' + ts;
-    renderKPIs(monthlyData);
-    renderCharts(monthlyData, monthlyData.map(function(d) { return d.label; }));
-    renderTable(monthlyData, false);
-  } else {
-    var idx = parseInt(fv);
-    var mk = monthKeys[idx];
-    var days = monthMap[mk];
-    var dayData = days.map(function(d) { var o = {}; for (var k in d) o[k] = d[k]; o.label = d.d; o.days = 1; return o; });
-    mi.textContent = 'Showing daily data for ' + mk.replace(/^\d+_/, '') + ' (' + days.length + ' days)' + ts;
-    renderKPIs([monthlyData[idx]]);
-    renderCharts(dayData, dayData.map(function(d) { return d.d.substring(5); }));
-    renderTable(dayData, true);
-  }
-}
-
-document.getElementById('mf').addEventListener('change', renderAll);
-
-// ===== START =====
-loadData();
-
+ReactDOM.render(React.createElement(App), document.getElementById('root'));
 </script>
 </body>
 </html>

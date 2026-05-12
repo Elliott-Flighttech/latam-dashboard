@@ -1,4 +1,3 @@
-@@ -1,444 +1,476 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -82,35 +81,34 @@ tr:hover td{background:#f8fafc}
     <button class="tab on" data-t="overview">Overview</button>
     <button class="tab" data-t="hh">Man-Hours (HH)</button>
     <button class="tab" data-t="tasks">Tasks</button>
-    <button class="tab" data-t="reasons">Reasons</button>
+    <button class="tab" data-t="reasons">GDE</button>
     <button class="tab" data-t="table">Detail Table</button>
   </div>
   <div class="tc on" id="t-overview">
     <div class="grd">
-      <div class="cc f"><div class="ct">HH Executed vs Programmed Trend</div><div class="cs">Man-hours evolution over time</div><div class="ch t"><canvas id="c1"></canvas></div></div>
-      <div class="cc"><div class="ct">Tasks: Executed vs Total</div><div class="cs">Task count per period</div><div class="ch"><canvas id="c2"></canvas></div></div>
-      <div class="cc"><div class="ct">Execution Rate (%)</div><div class="cs">Percentage of tasks executed over total</div><div class="ch"><canvas id="c3"></canvas></div></div>
+      <div class="cc f"><div class="ct">Man-Hours: Executed vs Programmed (Trend per Period)</div><div class="cs">Evolution of executed, programmed, extra and canceled man-hours over time</div><div class="ch t"><canvas id="c1"></canvas></div></div>
+      <div class="cc"><div class="ct">Tasks: Total vs Executed (Count per Period)</div><div class="cs">Number of tasks counted and effectively executed in each period</div><div class="ch"><canvas id="c2"></canvas></div></div>
+      <div class="cc"><div class="ct">Task Completion Rate (% of Total Tasks Executed) &amp; Man-Hours Efficiency (% Executed vs Programmed)</div><div class="cs">Green = % of tasks executed over total tasks. Blue = ratio of executed HH vs programmed HH (can exceed 100% when extra work is performed)</div><div class="ch"><canvas id="c3"></canvas></div></div>
     </div>
   </div>
   <div class="tc" id="t-hh">
     <div class="grd">
-      <div class="cc f"><div class="ct">Man-Hours Breakdown</div><div class="cs">Programmed, Extra, Canceled &amp; Unassigned</div><div class="ch t"><canvas id="c4"></canvas></div></div>
-      <div class="cc"><div class="ct">HH Distribution (Selected Period)</div><div class="cs">Proportion of each HH category</div><div class="ch"><canvas id="c5"></canvas></div></div>
-      <div class="cc"><div class="ct">Daily Average HH</div><div class="cs">Man-hours executed per working day</div><div class="ch"><canvas id="c6"></canvas></div></div>
+      <div class="cc f"><div class="ct">Man-Hours Breakdown by Category (per Period)</div><div class="cs">Stacked totals of Programmed, Extra, Canceled and Unassigned man-hours</div><div class="ch t"><canvas id="c4"></canvas></div></div>
+      <div class="cc"><div class="ct">Man-Hours Distribution by Category (Selected Period, %)</div><div class="cs">Share of each HH category over the total of the selected period</div><div class="ch"><canvas id="c5"></canvas></div></div>
+      <div class="cc"><div class="ct">Daily Average Man-Hours (Executed vs Programmed)</div><div class="cs">Average man-hours per working day in each period</div><div class="ch"><canvas id="c6"></canvas></div></div>
     </div>
   </div>
   <div class="tc" id="t-tasks">
     <div class="grd">
-      <div class="cc f"><div class="ct">Tasks Breakdown</div><div class="cs">Programmed, Extra, Unassigned (LATAM/FTWC) &amp; Canceled</div><div class="ch t"><canvas id="c7"></canvas></div></div>
-      <div class="cc"><div class="ct">Task Types (Selected Period)</div><div class="cs">Percentage distribution</div><div class="ch"><canvas id="c8"></canvas></div></div>
-      <div class="cc"><div class="ct">Deferrals &amp; Preventive</div><div class="cs">Trend over time</div><div class="ch"><canvas id="c9"></canvas></div></div>
-      <div class="cc"><div class="ct">Deferrals &amp; Preventive Closed / Partially Executed</div><div class="cs">Number of deferrals and preventive tasks closed or partially executed over time</div><div class="ch"><canvas id="c9"></canvas></div></div>
+      <div class="cc f"><div class="ct">Tasks Breakdown by Category (per Period)</div><div class="cs">Programmed, Extra, Unassigned (LATAM/FTWC) and Canceled tasks per period</div><div class="ch t"><canvas id="c7"></canvas></div></div>
+      <div class="cc"><div class="ct">Task Type Distribution (Selected Period, %)</div><div class="cs">Share of each task category over the total of the selected period</div><div class="ch"><canvas id="c8"></canvas></div></div>
+      <div class="cc"><div class="ct">Deferrals &amp; Preventive Maintenance &mdash; Tasks Closed or Partially Executed (Count per Period)</div><div class="cs">Number of MEL/CDL deferrals and scheduled preventive tasks that were closed or partially worked in each period. Does not include newly opened deferrals or programmed preventive volume.</div><div class="ch"><canvas id="c9"></canvas></div></div>
     </div>
   </div>
   <div class="tc" id="t-reasons">
     <div class="grd">
-      <div class="cc f"><div class="ct">Non-Execution / Cancellation Reasons</div><div class="cs">Cumulative total by reason category</div><div class="ch t"><canvas id="c10"></canvas></div></div>
-      <div class="cc f"><div class="ct">Top Reasons Over Time</div><div class="cs">Trend of main reasons</div><div class="ch t"><canvas id="c11"></canvas></div></div>
+      <div class="cc f"><div class="ct">GDE &mdash; Causes of Task Non-Execution (Cumulative)</div><div class="cs">Total incidents per cause category in the selected period</div><div class="ch t"><canvas id="c10"></canvas></div></div>
+      <div class="cc f"><div class="ct">GDE &mdash; Top 5 Causes of Non-Execution (Trend per Period)</div><div class="cs">Evolution of the five highest-impact causes over time</div><div class="ch t"><canvas id="c11"></canvas></div></div>
     </div>
   </div>
   <div class="tc" id="t-table">
@@ -306,17 +304,6 @@ function mc(id, cfg) { if (charts[id]) charts[id].destroy(); charts[id] = new Ch
 
 // ===== RENDER KPIs =====
 function renderKPIs(data) {
-  var d = data[data.length - 1], p = data.length > 1 ? data[data.length - 2] : null;
-  var er = pct(d.te, d.tt);
-  document.getElementById('kR').innerHTML =
-    '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + d.tt.toLocaleString() + '</div><div class="kpi-s">' + d.label + ' (' + d.days + ' days) ' + trend(d.tt, p ? p.tt : 0) + '</div></div>' +
-    '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + d.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% ' + trend(d.te, p ? p.te : 0) + '</div></div>' +
-    '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + d.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhe, d.days) + ' ' + trend(d.hhe, p ? p.hhe : 0) + '</div></div>' +
-    '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + d.hhp.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhp, p ? p.hhp : 0) + '</div></div>' +
-    '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + d.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(d.hhx, d.hhe) + '% of total ' + trend(d.hhx, p ? p.hhx : 0) + '</div></div>' +
-    '<div class="kpi r"><div class="kpi-l">HH Canceled</div><div class="kpi-v">' + d.hhc.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhc, p ? p.hhc : 0) + '</div></div>' +
-    '<div class="kpi o"><div class="kpi-l">HH Unassigned</div><div class="kpi-v">' + d.hhu.toLocaleString() + '</div><div class="kpi-s">' + trend(d.hhu, p ? p.hhu : 0) + '</div></div>' +
-    '<div class="kpi r"><div class="kpi-l">Deferrals</div><div class="kpi-v">' + d.def + '</div><div class="kpi-s">' + trend(d.def, p ? p.def : 0) + '</div></div>';
   var isAllMonths = data.length > 1 && document.getElementById('mf').value === 'all';
 
   if (isAllMonths) {
@@ -338,21 +325,21 @@ function renderKPIs(data) {
     var avgDEF = +(tot.def / n).toFixed(1);
 
     document.getElementById('kR').innerHTML =
-      '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + tot.tt.toLocaleString() + '</div><div class="kpi-s">' + n + ' months (' + tot.days + ' days) · Avg/mo: ' + avgTT.toLocaleString() + '</div></div>' +
-      '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + tot.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% · Avg/mo: ' + avgTE.toLocaleString() + '</div></div>' +
-      '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + tot.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(tot.hhe, tot.days) + ' · Avg/mo: ' + avgHHE.toLocaleString() + '</div></div>' +
-      '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + tot.hhp.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(tot.hhp, tot.days) + ' · Avg/mo: ' + avgHHP.toLocaleString() + '</div></div>' +
-      '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + tot.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(tot.hhx, tot.hhe) + '% of total · Avg/mo: ' + avgHHX.toLocaleString() + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + tot.tt.toLocaleString() + '</div><div class="kpi-s">' + n + ' months (' + tot.days + ' days) &middot; Avg/mo: ' + avgTT.toLocaleString() + '</div></div>' +
+      '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + tot.te.toLocaleString() + '</div><div class="kpi-s">Completion Rate: ' + er + '% &middot; Avg/mo: ' + avgTE.toLocaleString() + '</div></div>' +
+      '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + tot.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(tot.hhe, tot.days) + ' &middot; Avg/mo: ' + avgHHE.toLocaleString() + '</div></div>' +
+      '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + tot.hhp.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(tot.hhp, tot.days) + ' &middot; Avg/mo: ' + avgHHP.toLocaleString() + '</div></div>' +
+      '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + tot.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(tot.hhx, tot.hhe) + '% of total &middot; Avg/mo: ' + avgHHX.toLocaleString() + '</div></div>' +
       '<div class="kpi r"><div class="kpi-l">HH Canceled</div><div class="kpi-v">' + tot.hhc.toLocaleString() + '</div><div class="kpi-s">Avg/mo: ' + avgHHC.toLocaleString() + '</div></div>' +
       '<div class="kpi o"><div class="kpi-l">HH Unassigned</div><div class="kpi-v">' + tot.hhu.toLocaleString() + '</div><div class="kpi-s">Avg/mo: ' + avgHHU.toLocaleString() + '</div></div>' +
       '<div class="kpi r"><div class="kpi-l">Deferrals Closed / Partial</div><div class="kpi-v">' + tot.def + '</div><div class="kpi-s">Avg/mo: ' + avgDEF + '</div></div>';
   } else {
-    // Single month or daily view — show last entry with trend vs previous
+    // Single month or daily view - show last entry with trend vs previous
     var d = data[data.length - 1], p = data.length > 1 ? data[data.length - 2] : null;
     var er = pct(d.te, d.tt);
     document.getElementById('kR').innerHTML =
       '<div class="kpi"><div class="kpi-l">Total Tasks</div><div class="kpi-v">' + d.tt.toLocaleString() + '</div><div class="kpi-s">' + d.label + ' (' + d.days + ' days) ' + trend(d.tt, p ? p.tt : 0) + '</div></div>' +
-      '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + d.te.toLocaleString() + '</div><div class="kpi-s">Rate: ' + er + '% ' + trend(d.te, p ? p.te : 0) + '</div></div>' +
+      '<div class="kpi g"><div class="kpi-l">Tasks Executed</div><div class="kpi-v">' + d.te.toLocaleString() + '</div><div class="kpi-s">Completion Rate: ' + er + '% ' + trend(d.te, p ? p.te : 0) + '</div></div>' +
       '<div class="kpi"><div class="kpi-l">HH Executed</div><div class="kpi-v">' + d.hhe.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhe, d.days) + ' ' + trend(d.hhe, p ? p.hhe : 0) + '</div></div>' +
       '<div class="kpi g"><div class="kpi-l">HH Programmed</div><div class="kpi-v">' + d.hhp.toLocaleString() + '</div><div class="kpi-s">Avg/day: ' + avg(d.hhp, d.days) + ' ' + trend(d.hhp, p ? p.hhp : 0) + '</div></div>' +
       '<div class="kpi o"><div class="kpi-l">HH Extra</div><div class="kpi-v">' + d.hhx.toLocaleString() + '</div><div class="kpi-s">' + pct(d.hhx, d.hhe) + '% of total ' + trend(d.hhx, p ? p.hhx : 0) + '</div></div>' +
@@ -373,13 +360,13 @@ function renderCharts(data, labels) {
   ] }, options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false }, scales: { y: { beginAtZero: true, title: { display: true, text: 'Man-Hours' } } } } });
 
   mc('c2', { type: 'bar', data: { labels: labels, datasets: [
-    { label: 'Total', data: data.map(function(d) { return d.tt; }), backgroundColor: C.bll, borderColor: C.bl, borderWidth: 1 },
-    { label: 'Executed', data: data.map(function(d) { return d.te; }), backgroundColor: C.gnl, borderColor: C.gn, borderWidth: 1 }
+    { label: 'Total Tasks', data: data.map(function(d) { return d.tt; }), backgroundColor: C.bll, borderColor: C.bl, borderWidth: 1 },
+    { label: 'Tasks Executed', data: data.map(function(d) { return d.te; }), backgroundColor: C.gnl, borderColor: C.gn, borderWidth: 1 }
   ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
 
   mc('c3', { type: 'line', data: { labels: labels, datasets: [
-    { label: 'Task Execution Rate (%)', data: data.map(function(d) { return pct(d.te, d.tt); }), borderColor: C.gn, backgroundColor: C.gnl, fill: true, tension: .3, pointRadius: pr > 1 ? 5 : 1 },
-    { label: 'HH Efficiency (%)', data: data.map(function(d) { return pct(d.hhe, d.hhp); }), borderColor: C.bl, backgroundColor: C.bll, fill: false, tension: .3, pointRadius: pr > 1 ? 5 : 1 }
+    { label: 'Task Completion Rate (% Executed / Total)', data: data.map(function(d) { return pct(d.te, d.tt); }), borderColor: C.gn, backgroundColor: C.gnl, fill: true, tension: .3, pointRadius: pr > 1 ? 5 : 1 },
+    { label: 'Man-Hours Efficiency (% HH Executed / HH Programmed)', data: data.map(function(d) { return pct(d.hhe, d.hhp); }), borderColor: C.bl, backgroundColor: C.bll, fill: false, tension: .3, pointRadius: pr > 1 ? 5 : 1 }
   ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { min: 0, max: 200, title: { display: true, text: '%' } } } } });
 
   mc('c4', { type: 'bar', data: { labels: labels, datasets: [
@@ -394,8 +381,8 @@ function renderCharts(data, labels) {
   mc('c5', { type: 'doughnut', data: { labels: ['Programmed', 'Extra', 'Canceled', 'Unassigned'], datasets: [{ data: [tot.hhp, tot.hhx, tot.hhc, tot.hhu], backgroundColor: [C.bl, C.or, C.rd, C.gy] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
 
   mc('c6', { type: 'bar', data: { labels: labels, datasets: [
-    { label: 'Avg HH Exec/day', data: data.map(function(d) { return data.length === 1 ? d.hhe : +(d.hhe / (d.days || 1)).toFixed(1); }), backgroundColor: C.bl },
-    { label: 'Avg HH Prog/day', data: data.map(function(d) { return data.length === 1 ? d.hhp : +(d.hhp / (d.days || 1)).toFixed(1); }), backgroundColor: C.gn }
+    { label: 'Avg HH Executed / day', data: data.map(function(d) { return data.length === 1 ? d.hhe : +(d.hhe / (d.days || 1)).toFixed(1); }), backgroundColor: C.bl },
+    { label: 'Avg HH Programmed / day', data: data.map(function(d) { return data.length === 1 ? d.hhp : +(d.hhp / (d.days || 1)).toFixed(1); }), backgroundColor: C.gn }
   ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: data.length > 31 ? 'HH per day' : 'HH' } } } } });
 
   mc('c7', { type: 'bar', data: { labels: labels, datasets: [
@@ -411,12 +398,11 @@ function renderCharts(data, labels) {
   mc('c8', { type: 'doughnut', data: { labels: ['Programmed', 'Extra', 'Unassigned LATAM', 'Unassigned FTWC', 'Canceled'], datasets: [{ data: [tTot.pt, tTot.et, tTot.tul, tTot.tuf, tTot.ct], backgroundColor: [C.bl, C.or, C.pu, C.pk, C.rd] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
 
   mc('c9', { type: 'bar', data: { labels: labels, datasets: [
-    { label: 'Deferrals', data: data.map(function(d) { return d.def; }), backgroundColor: C.rd },
-    { label: 'Preventive', data: data.map(function(d) { return d.prev; }), backgroundColor: C.tl }
-  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true } } } });
+    { label: 'Deferrals Closed / Partial', data: data.map(function(d) { return d.def; }), backgroundColor: C.rd },
+    { label: 'Preventive Closed / Partial', data: data.map(function(d) { return d.prev; }), backgroundColor: C.tl }
+  ] }, options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, title: { display: true, text: 'Tasks count' } } } } });
 
   var rKeys = ['r_fhh', 'r_fin', 'r_tinc', 'r_tat', 'r_feq', 'r_inf', 'r_wea', 'r_eval', 'r_tav', 'r_noa', 'r_tni'];
-  var rLabels = ['Missing HH (Resource)', 'Financing (Parts/Tools)', 'Incompatible Task', 'TAT (Insufficient Slot)', 'Missing Ground Equip.', 'Infrastructure', 'Weather', 'Damage Evaluation', 'Task In Progress', 'Not Accepted', 'No Task Info'];
   var rLabels = ['Missing HH (Resource)', 'Financing (Parts/Tools)', 'Incompatible Task', 'TAT (Insufficient Slot)', 'Missing Ground Equip.', 'Infrastructure', 'Weather', 'Deferral Evaluation / TSM - Troubleshooting', 'Partially Completed (Preventive / IH)', 'Not Accepted', 'No Task Info'];
   var rColors = [C.rd, C.or, C.pu, C.bl, C.tl, C.gy, C.id, C.pk, C.gn, '#d946ef', '#a855f7'];
   var rTotals = rKeys.map(function(k) { return data.reduce(function(s, d) { return s + (d[k] || 0); }, 0); });
